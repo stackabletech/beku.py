@@ -1,0 +1,43 @@
+---
+apiVersion: secrets.stackable.tech/v1alpha1
+kind: SecretClass
+metadata:
+  name: s3-credentials
+spec:
+  backend:
+    k8sSearch:
+      searchNamespace:
+        pod: {}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-credentials
+  labels:
+    secrets.stackable.tech/class: s3-credentials
+stringData:
+  accessKey: trino
+  secretKey: trinotrino
+---
+apiVersion: hive.stackable.tech/v1alpha1
+kind: HiveCluster
+metadata:
+  name: hive
+spec:
+  image:
+    productVersion: "{{ test_scenario['values']['hive'].split('-stackable')[0] }}"
+    stackableVersion: "{{ test_scenario['values']['hive'].split('-stackable')[1] }}"
+  metastore:
+    roleGroups:
+      default:
+        replicas: 2
+        config:
+          database:
+            connString: jdbc:postgresql://postgresql:5432/hive
+            user: hive
+            password: hive
+            dbType: postgres
+  s3:
+    reference: minio
+  hdfs:
+    configMap: hdfs
