@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
+"""
+Example usage:
 
+  beku.py -i tests/test-definition.yaml -t tests/templates/kuttl -k tests/kuttl-test.yaml.jinja2 -o tests/_work
+
+"""
 from typing import Dict, List, TypeVar, Type, Tuple
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
@@ -10,7 +15,7 @@ from shutil import copy2
 from sys import exit
 from yaml import safe_load
 import logging
-
+import re
 
 @dataclass
 class TestCase:
@@ -29,8 +34,6 @@ class TestCase:
     def expand(self, template_dir: str, target_dir: str) -> None:
         logging.info(f"Expanding test case id [{self.tid}]")
         td_root = path.join(template_dir, self.name)
-        if not path.isdir(td_root):
-            raise ValueError(f"Test definition directory not found [{td_root}]")
         tc_root = path.join(target_dir, self.name, self.tid)
         _mkdir_ignore_exists(tc_root)
         test_env = Environment(
@@ -119,12 +122,37 @@ class TestSuite:
     def __repr__(self) -> str:
         return f"TestSuite(source={self.source})"
 
-    def expand(self, template_dir: str, output_dir: str) -> int:
+    def expand(self, template_dir: str, output_dir: str, kuttl_tests: str) -> int:
         logging.info(f"Expanding test suite from {self.source}")
+        self._sanity_checks(template_dir, output_dir, kuttl_tests)
         _mkdir_ignore_exists(output_dir)
+        self._expand_kuttl_tests(output_dir, kuttl_tests)
         for test_case in self.test_cases:
             test_case.expand(template_dir, output_dir)
         return 0
+
+    def _sanity_checks(self, template_dir: str, output_dir: str, kuttl_tests: str) -> None:
+        for tc in self.test_cases:
+            td_root = path.join(template_dir, tc.name)
+            if not path.isdir(td_root):
+                raise ValueError(f"Test definition directory not found [{td_root}]")
+        if not (path.isfile(kuttl_tests)):
+            raise ValueError(f"Kuttl test config template not found [{kuttl_tests}]")
+
+    def _expand_kuttl_tests(self, output_dir: str, kuttl_tests: str) -> None:
+        env = Environment(
+            loader=FileSystemLoader(path.dirname(kuttl_tests))
+        )
+        kt_base_name = path.basename(kuttl_tests)
+        t = env.get_template(kt_base_name)
+        kt_dest_name = re.sub(r'\.j(inja)?2$', '', kt_base_name)
+        # Compatibility warning: Assume output_dir ends with 'tests' and remove
+        # it from the destination file
+        dest = path.join(path.dirname(output_dir), kt_dest_name)
+        kuttl_vars = {"testinput": {"tests": [{"name": tn} for tn in {tc.name for tc in self.test_cases}]}}
+        logging.debug(f"kuttl vars {kuttl_vars}")
+        with open(dest, encoding="utf8", mode="w") as stream:
+            print(t.render(kuttl_vars), file=stream)
 
 
 def parse_cli_args() -> Namespace:
@@ -161,7 +189,7 @@ def parse_cli_args() -> Namespace:
         default="info",
     )
 
-    parser.add_argument("-k", "--kuttl_test", help="TODO", type=str, required=False)
+    parser.add_argument("-k", "--kuttl_test", help="TODO", type=str, required=True)
 
     return parser.parse_args()
 
@@ -185,7 +213,9 @@ def main() -> int:
     cli_args = parse_cli_args()
     logging.basicConfig(encoding="utf-8", level=_cli_log_level(cli_args.log_level))
     ts = TestSuite(cli_args.test_definition)
-    return ts.expand(cli_args.template_dir, cli_args.output_dir)
+    # Compatibility warning: add 'tests' to output_dir
+    output_dir = path.join(cli_args.output_dir, 'tests')
+    return ts.expand(cli_args.template_dir, output_dir, cli_args.kuttl_test)
 
 
 if __name__ == "__main__":
