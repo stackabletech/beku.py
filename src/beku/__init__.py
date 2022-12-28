@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Example usage:
-
-  beku.py -i tests/test-definition.yaml -t tests/templates/kuttl -k tests/kuttl-test.yaml.jinja2 -o tests/_work
-
-"""
 from typing import Dict, List, TypeVar, Type, Tuple
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
@@ -16,6 +9,7 @@ from sys import exit
 from yaml import safe_load
 import logging
 import re
+
 
 @dataclass
 class TestCase:
@@ -131,7 +125,9 @@ class TestSuite:
             test_case.expand(template_dir, output_dir)
         return 0
 
-    def _sanity_checks(self, template_dir: str, output_dir: str, kuttl_tests: str) -> None:
+    def _sanity_checks(
+        self, template_dir: str, output_dir: str, kuttl_tests: str
+    ) -> None:
         for tc in self.test_cases:
             td_root = path.join(template_dir, tc.name)
             if not path.isdir(td_root):
@@ -140,16 +136,18 @@ class TestSuite:
             raise ValueError(f"Kuttl test config template not found [{kuttl_tests}]")
 
     def _expand_kuttl_tests(self, output_dir: str, kuttl_tests: str) -> None:
-        env = Environment(
-            loader=FileSystemLoader(path.dirname(kuttl_tests))
-        )
+        env = Environment(loader=FileSystemLoader(path.dirname(kuttl_tests)))
         kt_base_name = path.basename(kuttl_tests)
         t = env.get_template(kt_base_name)
-        kt_dest_name = re.sub(r'\.j(inja)?2$', '', kt_base_name)
+        kt_dest_name = re.sub(r"\.j(inja)?2$", "", kt_base_name)
         # Compatibility warning: Assume output_dir ends with 'tests' and remove
         # it from the destination file
         dest = path.join(path.dirname(output_dir), kt_dest_name)
-        kuttl_vars = {"testinput": {"tests": [{"name": tn} for tn in {tc.name for tc in self.test_cases}]}}
+        kuttl_vars = {
+            "testinput": {
+                "tests": [{"name": tn} for tn in {tc.name for tc in self.test_cases}]
+            }
+        }
         logging.debug(f"kuttl vars {kuttl_vars}")
         with open(dest, encoding="utf8", mode="w") as stream:
             print(t.render(kuttl_vars), file=stream)
@@ -162,21 +160,24 @@ def parse_cli_args() -> Namespace:
         "--test_definition",
         help="TODO",
         type=str,
-        required=True,
+        required=False,
+        default="tests/test-definition.yaml",
     )
     parser.add_argument(
         "-t",
         "--template_dir",
         help="TODO",
         type=str,
-        required=True,
+        required=False,
+        default="tests/templates/kuttl",
     )
     parser.add_argument(
         "-o",
         "--output_dir",
         help="TODO",
         type=str,
-        required=True,
+        required=False,
+        default="tests/_work",
     )
 
     parser.add_argument(
@@ -189,7 +190,14 @@ def parse_cli_args() -> Namespace:
         default="info",
     )
 
-    parser.add_argument("-k", "--kuttl_test", help="TODO", type=str, required=True)
+    parser.add_argument(
+        "-k",
+        "--kuttl_test",
+        help="TODO",
+        type=str,
+        required=False,
+        default="tests/kuttl-test.yaml.jinja2",
+    )
 
     return parser.parse_args()
 
@@ -214,7 +222,7 @@ def main() -> int:
     logging.basicConfig(encoding="utf-8", level=_cli_log_level(cli_args.log_level))
     ts = TestSuite(cli_args.test_definition)
     # Compatibility warning: add 'tests' to output_dir
-    output_dir = path.join(cli_args.output_dir, 'tests')
+    output_dir = path.join(cli_args.output_dir, "tests")
     return ts.expand(cli_args.template_dir, output_dir, cli_args.kuttl_test)
 
 
