@@ -2,7 +2,7 @@
 
 ## Installation
 
-    pip install beku-stackable
+    pip install beku-stackabletech
 
 ## Usage
 
