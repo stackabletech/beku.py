@@ -7,7 +7,8 @@
 ## Usage
 
     cd <stackable operator directory>
-    beku
+    rm -rf tests/_work && beku
+    cd tests/_work && kubectl kuttl test
 
 ## Description
 
