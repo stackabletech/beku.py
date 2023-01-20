@@ -9,7 +9,18 @@ from sys import exit
 from yaml import safe_load
 import logging
 import re
+import os
 
+
+def ansible_lookup(loc: str, what: str) -> str:
+    """
+    Lookup an environment variable (what) and return it's contents if any.
+    Simulates the Ansible `lookup()` function which is made available by Ansible Jinja templates.
+    Raises an exception if `loc` is not `env`.
+    """
+    if not loc is 'env':
+        raise ValueError("Can only lookup() in 'env'")
+    return os.environ[what]
 
 @dataclass
 class TestCase:
@@ -34,6 +45,7 @@ class TestCase:
             loader=FileSystemLoader(path.join(template_dir, self.name)),
             trim_blocks=True
         )
+        test_env.globals['lookup'] = ansible_lookup
         sub_level: int = 0
         for root, dirs, files in walk(td_root):
             sub_level += 1
