@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.4] - 2023-01-20
+
+### Changed
+
+- Prevent the `lookup()` function from raising an exception.
+
 ## [0.0.3] - 2023-01-20
 
 ### Changed

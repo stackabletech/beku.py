@@ -20,7 +20,12 @@ def ansible_lookup(loc: str, what: str) -> str:
     """
     if not loc is 'env':
         raise ValueError("Can only lookup() in 'env'")
-    return os.environ[what]
+    result = ""
+    try:
+        result= os.environ[what]
+    except KeyError:
+        pass
+    return result
 
 @dataclass
 class TestCase:
