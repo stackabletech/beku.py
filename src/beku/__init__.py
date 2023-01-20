@@ -31,7 +31,8 @@ class TestCase:
         tc_root = path.join(target_dir, self.name, self.tid)
         _mkdir_ignore_exists(tc_root)
         test_env = Environment(
-            loader=FileSystemLoader(path.join(template_dir, self.name))
+            loader=FileSystemLoader(path.join(template_dir, self.name)),
+            trim_blocks=True
         )
         sub_level: int = 0
         for root, dirs, files in walk(td_root):
