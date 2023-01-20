@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.3] - 2023-01-20
+
+### Changed
+
+- Add `lookup()` function for (partial) compatibility with Ansible templates.
+
 ## [0.0.2] - 2023-01-20
 
 ### Changed
