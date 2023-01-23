@@ -12,6 +12,10 @@ import re
 import os
 
 
+__version_info__ = (0, 0, 4)
+__version__ = ".".join(map(str, __version_info__))
+
+
 def ansible_lookup(loc: str, what: str) -> str:
     """
     Lookup an environment variable (what) and return it's contents if any.
@@ -22,10 +26,11 @@ def ansible_lookup(loc: str, what: str) -> str:
         raise ValueError("Can only lookup() in 'env'")
     result = ""
     try:
-        result= os.environ[what]
+        result = os.environ[what]
     except KeyError:
         pass
     return result
+
 
 @dataclass
 class TestCase:
@@ -37,7 +42,8 @@ class TestCase:
         self.tid = "_".join(
             chain(
                 [self.name],
-                ["-".join([x, self.values.get(x)]) for x in self.values.keys()],
+                ["-".join([x, self.values.get(x)])
+                 for x in self.values.keys()],
             )
         )
 
@@ -58,23 +64,30 @@ class TestCase:
                 # Sanity check
                 raise ValueError("Maximum recursive level (5) reached.")
             for d in dirs:
-                _mkdir_ignore_exists(path.join(tc_root, root[len(td_root) + 1 :], d))
+                _mkdir_ignore_exists(
+                    path.join(tc_root, root[len(td_root) + 1:], d))
             for f in files:
+                source = path.join(root, f)
+                dest = ""
+                f_mode = os.stat(source).st_mode
                 if f.endswith(".j2"):
-                    render_dest = path.join(tc_root, root[len(td_root) + 1 :], f[:-3:])
-                    self._expand_template(f, render_dest, test_env)
+                    logging.debug(f"Render template {f} to {dest}")
+                    dest = path.join(tc_root, root[len(td_root) + 1:], f[:-3:])
+                    self._expand_template(f, dest, test_env)
                 else:
-                    logging.debug(f"Copy file {f}")
-                    copy2(
-                        path.join(root, f),
-                        path.join(tc_root, root[len(td_root) + 1 :], f),
-                    )
+                    dest = path.join(tc_root, root[len(td_root) + 1:], f)
+                    logging.debug(f"Copy file {f} to {dest}")
+                    copy2(source, dest)
+                # restore file permissions (especially the executable bit is important here)
+                logging.debug(f"Update file mode for {dest}")
+                os.chmod(dest, f_mode)
 
     def _expand_template(self, template: str, dest: str, env: Environment) -> None:
         logging.debug(f"Expanding template {template}")
         t = env.get_template(template)
         with open(dest, encoding="utf8", mode="w") as stream:
-            print(t.render({"test_scenario": {"values": self.values}}), file=stream)
+            print(
+                t.render({"test_scenario": {"values": self.values}}), file=stream)
 
 
 @dataclass
@@ -149,9 +162,11 @@ class TestSuite:
         for tc in self.test_cases:
             td_root = path.join(template_dir, tc.name)
             if not path.isdir(td_root):
-                raise ValueError(f"Test definition directory not found [{td_root}]")
+                raise ValueError(
+                    f"Test definition directory not found [{td_root}]")
         if not (path.isfile(kuttl_tests)):
-            raise ValueError(f"Kuttl test config template not found [{kuttl_tests}]")
+            raise ValueError(
+                f"Kuttl test config template not found [{kuttl_tests}]")
 
     def _expand_kuttl_tests(self, output_dir: str, kuttl_tests: str) -> None:
         env = Environment(loader=FileSystemLoader(path.dirname(kuttl_tests)))
@@ -172,11 +187,20 @@ class TestSuite:
 
 
 def parse_cli_args() -> Namespace:
-    parser = ArgumentParser(description="TODO")
+    parser = ArgumentParser(
+        description="Kuttl test expander for the Stackable Data Platform")
+    parser.add_argument(
+        "-v",
+        "--version",
+        help="Display application version",
+        action='version',
+        version='%(prog)s {version}'.format(version=__version__)
+    )
+
     parser.add_argument(
         "-i",
         "--test_definition",
-        help="TODO",
+        help="Test definition file.",
         type=str,
         required=False,
         default="tests/test-definition.yaml",
@@ -184,7 +208,7 @@ def parse_cli_args() -> Namespace:
     parser.add_argument(
         "-t",
         "--template_dir",
-        help="TODO",
+        help="Folder with test templates.",
         type=str,
         required=False,
         default="tests/templates/kuttl",
@@ -192,7 +216,7 @@ def parse_cli_args() -> Namespace:
     parser.add_argument(
         "-o",
         "--output_dir",
-        help="TODO",
+        help="Output folder for the expanded test cases.",
         type=str,
         required=False,
         default="tests/_work",
@@ -201,7 +225,7 @@ def parse_cli_args() -> Namespace:
     parser.add_argument(
         "-l",
         "--log_level",
-        help="TODO",
+        help="Set log level.",
         type=str,
         required=False,
         choices=["debug", "info"],
@@ -211,7 +235,7 @@ def parse_cli_args() -> Namespace:
     parser.add_argument(
         "-k",
         "--kuttl_test",
-        help="TODO",
+        help="Kuttl test suite definition file.",
         type=str,
         required=False,
         default="tests/kuttl-test.yaml.jinja2",
@@ -237,7 +261,8 @@ def _mkdir_ignore_exists(path: str) -> None:
 
 def main() -> int:
     cli_args = parse_cli_args()
-    logging.basicConfig(encoding="utf-8", level=_cli_log_level(cli_args.log_level))
+    logging.basicConfig(
+        encoding="utf-8", level=_cli_log_level(cli_args.log_level))
     ts = TestSuite(cli_args.test_definition)
     # Compatibility warning: add 'tests' to output_dir
     output_dir = path.join(cli_args.output_dir, "tests")
