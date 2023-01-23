@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.5] - 2023-01-23
+
+### Changed
+
+- Preserve file permissions for the generated files.
+
 ## [0.0.4] - 2023-01-20
 
 ### Changed
@@ -27,4 +33,3 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Initial release.
-

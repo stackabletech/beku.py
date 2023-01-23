@@ -1,5 +1,7 @@
 # beku
 
+Version: 0.0.5
+
 ## Installation
 
     pip install beku-stackabletech
@@ -16,8 +18,18 @@ Fast Kuttl tests expander for Stackable integration tests.
 
     beku -i tests/test-definition.yaml -t tests/templates/kuttl -k tests/kuttl-test.yaml.jinja2 -o tests/_work
 
-## Build
+## Release a new version
 
+Update the version in:
+
+* `pyptoject.toml`
+* `setup.cfg`
+* `__init__.py`
+* `README.md`
+
+Update the CHANGELOG.
+Commit and tag.
+Build and publish:
+    rm -rf dist/
     python -m build --sdist --wheel .
     twine upload dist/*
-
