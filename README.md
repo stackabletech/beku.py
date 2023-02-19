@@ -23,7 +23,7 @@ Fast Kuttl tests expander for Stackable integration tests.
 Update the version in:
 
 * `pyptoject.toml`
-* `__init__.py`
+* `version.py`
 * `README.md`
 
 Update the CHANGELOG.

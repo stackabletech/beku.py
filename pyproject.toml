@@ -21,7 +21,7 @@ lint = ['pylint', 'mypy']
 dev = ['pre-commit']
 
 [project.scripts]
-beku = "beku:main"
+beku = "beku.main:main"
 
 [project.urls]
 "Homepage" = "https://github.com/stackabletech/beku.py"

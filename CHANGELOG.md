@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Install and run pylint and mypy.
+- Reorganize package modules.
+- Install GitHub linting actions.
+- Install pre-commit hooks.
+
 ## [0.0.5] - 2023-01-23
 
 ### Changed

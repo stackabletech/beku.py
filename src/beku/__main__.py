@@ -1,9 +1,5 @@
-"""
-Example usage:
-
-
-"""
+"""Package entry point."""
 import sys
-from beku import main
+from .main import main
 
 sys.exit(main())
