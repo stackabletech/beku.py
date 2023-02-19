@@ -3,7 +3,7 @@ Example usage:
 
 
 """
+import sys
 from beku import main
-from sys import exit
 
-exit(main())
+sys.exit(main())

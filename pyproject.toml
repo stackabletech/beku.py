@@ -1,6 +1,6 @@
 [project]
 name = "beku-stackabletech"
-version = "0.0.5"
+version = "0.0.6-dev"
 authors = [
   { name="Razvan Mihai", email="razvan.mihai@stackable.tech" }
 ]
@@ -12,16 +12,16 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "Jinja2>=3.1.2",
+    "PyYAML>=6.0"
+]
+[project.optional-dependencies]
+lint = ['pre-commit', 'pylint', 'mypy']
 
 [project.scripts]
 beku = "beku:main"
 
-[build-system]
-requires = [
-    "setuptools >= 40.6.2",
-    "wheel >= 0.30.0"
-]
-build-backend = "setuptools.build_meta"
-
 [project.urls]
-Homepage = "https://github.com/stackabletech/beku.py"
+"Homepage" = "https://github.com/stackabletech/beku.py"
+"Bug Tracker" = "https://github.com/stackabletech/beku.py/issues"

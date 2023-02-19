@@ -1,6 +1,6 @@
 # beku
 
-Version: 0.0.5
+Version: 0.0.6-dev
 
 ## Installation
 
@@ -23,7 +23,6 @@ Fast Kuttl tests expander for Stackable integration tests.
 Update the version in:
 
 * `pyptoject.toml`
-* `setup.cfg`
 * `__init__.py`
 * `README.md`
 
@@ -31,5 +30,5 @@ Update the CHANGELOG.
 Commit and tag.
 Build and publish:
     rm -rf dist/
-    python -m build --sdist --wheel .
+    python -m build --wheel .
     twine upload dist/*
