@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass, field
+from functools import cached_property
 from itertools import product, chain
 from os import walk, path, makedirs
 from shutil import copy2
@@ -34,7 +35,7 @@ class TestCase:
     name: str
     values: Dict[str, str]
 
-    @property
+    @cached_property
     def tid(self) -> str:
         """Return the test id."""
         return "_".join(
