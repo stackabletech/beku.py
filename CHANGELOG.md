@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.6] - 2023-06-21
+
 - Install and run pylint and mypy.
 - Reorganize package modules.
 - Install GitHub linting actions.
