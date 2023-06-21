@@ -1,10 +1,10 @@
 # beku
 
-Version: 0.0.6
+Version: 0.0.7-dev
 
 ## Installation
 
-    pip install git+https://github.com/stackabletech/beku.py.git@0.0.6
+    pip install git+https://github.com/stackabletech/beku.py.git@master
 
 ## Usage
 
