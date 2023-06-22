@@ -12,6 +12,8 @@ from typing import Dict, List, TypeVar, Type, Tuple
 from jinja2 import Environment, FileSystemLoader
 from yaml import safe_load
 
+PATTERN_EXTENSION_JINJA: str = r"\.j(inja)?2$"
+
 
 def ansible_lookup(loc: str, what: str) -> str:
     """
@@ -27,6 +29,63 @@ def ansible_lookup(loc: str, what: str) -> str:
     except KeyError:
         pass
     return result
+
+
+@dataclass(frozen=True)
+class TestFile:
+    """An input test file, not a template."""
+    dest_dir: str
+    source_dir: str
+    file_name: str
+
+    def build_destination(self) -> str:
+        """Copies the file name to the destination directory.
+        Returns the destination file name.
+        """
+        source = path.join(self.source_dir, self.file_name)
+        dest = path.join(self.dest_dir, self.file_name)
+        logging.debug("Copy file %s to %s", source, dest)
+        copy2(source, dest)
+        logging.debug("Update file mode for %s", dest)
+        f_mode = os.stat(source).st_mode
+        os.chmod(dest, f_mode)
+        return dest
+
+
+@dataclass(frozen=True)
+class TestTemplate:
+    """An Jinja 2 template"""
+    dest_dir: str
+    source_dir: str
+    file_name: str
+    env: Environment
+    values: Dict[str, str]
+
+    def build_destination(self) -> str:
+        """Renders the template to file in the destination directory. The resulting file has the same name as the template
+        but with the .j2 or .jinja2 ending removed.
+        Returns the rendered file name.
+        """
+        source = path.join(self.source_dir, self.file_name)
+        dest = path.join(self.dest_dir, re.sub(
+            PATTERN_EXTENSION_JINJA, "", self.file_name))
+        logging.debug("Render template %s to %s", source, dest)
+        template = self.env.get_template(self.file_name)
+        with open(dest, encoding="utf8", mode="w") as stream:
+            print(
+                template.render({"test_scenario": {"values": self.values}}), file=stream)
+        logging.debug("Update file mode for %s", dest)
+        f_mode = os.stat(source).st_mode
+        os.chmod(dest, f_mode)
+        return dest
+
+
+def test_source_with_context(file_name: str, source_dir: str, dest_dir: str, env: Environment,
+                             values: Dict[str, str]) -> TestFile | TestTemplate:
+    if re.search(PATTERN_EXTENSION_JINJA, file_name):
+        return TestTemplate(file_name=file_name, source_dir=source_dir, dest_dir=dest_dir, env=env, values=values)
+
+    return TestFile(file_name=file_name, source_dir=source_dir, dest_dir=dest_dir)
 
 
 @dataclass(frozen=True)
@@ -66,29 +125,9 @@ class TestCase:
                 _mkdir_ignore_exists(
                     path.join(tc_root, root[len(td_root) + 1:], dir_name))
             for file_name in files:
-                source = path.join(root, file_name)
-                dest = ""
-                f_mode = os.stat(source).st_mode
-                if file_name.endswith(".j2"):
-                    logging.debug("Render template %s to %s", file_name, dest)
-                    dest = path.join(
-                        tc_root, root[len(td_root) + 1:], file_name[:-3:])
-                    self._expand_template(file_name, dest, test_env)
-                else:
-                    dest = path.join(
-                        tc_root, root[len(td_root) + 1:], file_name)
-                    logging.debug("Copy file %s to %s", file_name, dest)
-                    copy2(source, dest)
-                # restore file permissions (especially the executable bit is important here)
-                logging.debug("Update file mode for %s", dest)
-                os.chmod(dest, f_mode)
-
-    def _expand_template(self, template_file: str, dest: str, env: Environment) -> None:
-        logging.debug("Expanding template %s", template_file)
-        template = env.get_template(template_file)
-        with open(dest, encoding="utf8", mode="w") as stream:
-            print(
-                template.render({"test_scenario": {"values": self.values}}), file=stream)
+                test_source = test_source_with_context(file_name, root, path.join(tc_root, root[len(td_root) + 1:]),
+                                                       test_env, self.values)
+                test_source.build_destination()
 
 
 @dataclass(frozen=True)
@@ -109,7 +148,7 @@ class TestDefinition:
     dimensions: List[str]
 
 
-TTestSuite = TypeVar(    # pylint: disable=invalid-name
+TTestSuite = TypeVar(  # pylint: disable=invalid-name
     "TTestSuite", bound="TestSuite")
 
 
@@ -174,10 +213,11 @@ class TestSuite:
                 f"Kuttl test config template not found [{kuttl_tests}]")
 
     def _expand_kuttl_tests(self, output_dir: str, kuttl_tests: str) -> None:
+        """Generate the kuttl-tests.yaml file and fill in paths to tests."""
         env = Environment(loader=FileSystemLoader(path.dirname(kuttl_tests)))
         kt_base_name = path.basename(kuttl_tests)
         template = env.get_template(kt_base_name)
-        kt_dest_name = re.sub(r"\.j(inja)?2$", "", kt_base_name)
+        kt_dest_name = re.sub(PATTERN_EXTENSION_JINJA, "", kt_base_name)
         # Compatibility warning: Assume output_dir ends with 'tests' and remove
         # it from the destination file
         dest = path.join(path.dirname(output_dir), kt_dest_name)
