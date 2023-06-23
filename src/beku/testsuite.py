@@ -9,7 +9,7 @@ from functools import cached_property
 from itertools import product, chain
 from os import walk, path, makedirs
 from shutil import copy2
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 
 from jinja2 import Environment, FileSystemLoader
 from yaml import safe_load
@@ -150,52 +150,49 @@ class TestDefinition:
     dimensions: List[str]
 
 
-@dataclass
+@dataclass(frozen=True)
 class TestSuitePatchDimension:
-    name: str
-    expr: str
+    name: Optional[str]
+    expr: Optional[str]
 
-    @classmethod
-    def from_dict(cls, _dict: Dict[str, str]) -> TestSuitePatchDimension:
-        if not _dict["name"]:
-            raise ValueError(
-                "Test patch dimensions must have a [name] property")
-
-        return TestSuitePatchDimension(**_dict)
-
-    def patch_dim_values(self, dim: TestDimension) -> TestDimension:
-        if self.expr == 'last':
-            patched_values = [dim.values[-1]]
-        elif self.expr == 'first':
-            patched_values = [dim.values[0]]
-        else:
-            patched_values = [v for v in dim.values if v.find(self.expr) != -1]
-        return TestDimension(name=dim.name, values=patched_values)
+    def patch_dim_values(self, dims: List[TestDimension]) -> List[TestDimension]:
+        result = []
+        for dim in dims:
+            if not self.name or self.name == dim.name:
+                if self.expr == 'last':
+                    patched_values = [dim.values[-1]]
+                elif self.expr == 'first':
+                    patched_values = [dim.values[0]]
+                elif self.expr is None:
+                    patched_values = dim.values
+                else:
+                    patched_values = [
+                        v for v in dim.values if v.find(self.expr) != -1]
+                result.append(TestDimension(
+                    name=dim.name, values=patched_values))
+            else:
+                result.append(dim)
+        return result
 
 
 @dataclass
 class TestSuitePatch:
-    test: str
+    test: Optional[str]
     patch_dimensions: List[TestSuitePatchDimension]
 
     @classmethod
     def from_dict(cls, _dict: Dict[str, Any]) -> TestSuitePatch:
-        if not _dict["test"]:
-            raise ValueError("Test patches must have a [test] property")
-        return TestSuitePatch(test=_dict['test'],
-                              patch_dimensions=[TestSuitePatchDimension.from_dict(p) for p in
-                                                _dict.get('dimensions', [])])
+        return TestSuitePatch(test=_dict.get('test', None),
+                              patch_dimensions=[
+                                  TestSuitePatchDimension(name=p.get("name", None), expr=p.get("expr", None)) for p in
+                                  _dict.get('dimensions', [])])
 
     def patch(self, test_name: str, dims: List[TestDimension]) -> List[TestDimension]:
-        result = []
+        result = {}
         for _pd in self.patch_dimensions:
-            try:
-                to_patch_dim = next((d for d in dims if _pd.name == d.name))
-                result.append(_pd.patch_dim_values(to_patch_dim))
-            except StopIteration as exc:
-                raise ValueError(
-                    f"Cannot find dimension [{_pd.name}] to patch in test [{test_name}]") from exc
-        return result
+            for dim in _pd.patch_dim_values(dims):
+                result[dim.name] = dim
+        return list(result.values())
 
 
 @dataclass(frozen=True)
@@ -227,8 +224,8 @@ class TestSuite:
         if self.patch:
             result = []
             for test_patch in self.patch:
-                if test_patch.test == test_name:
-                    result.append(test_patch.patch(test_name, dims))
+                result.extend(test_patch.patch(test_name, dims))
+            return result
         return dims
 
 
@@ -291,9 +288,9 @@ def renderer_from_stream(stream) -> List[EffectiveTestSuite]:
 
     test_suites = [TestSuite(name="default", select=[], patch=[])]
     if "suites" in tin:
-        test_suites = [
+        test_suites.extend([
             TestSuite.from_dict(t) for t in tin["suites"]
-        ]
+        ])
     return _resolve_effective_test_suites(dimensions, test_def, test_suites)
 
 
