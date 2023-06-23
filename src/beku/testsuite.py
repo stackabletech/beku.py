@@ -64,8 +64,8 @@ class TestTemplate:
     values: Dict[str, str]
 
     def build_destination(self) -> str:
-        """Renders the template to file in the destination directory. The resulting file has the same name as the template
-        but with the .j2 or .jinja2 ending removed.
+        """Renders the template to file in the destination directory. The resulting file has the same name as the
+        template but with the .j2 or .jinja2 ending removed.
         Returns the rendered file name.
         """
         source = path.join(self.source_dir, self.file_name)

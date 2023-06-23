@@ -2,7 +2,7 @@
 name = "beku-stackabletech"
 version = "0.0.7-dev"
 authors = [
-  { name="Razvan Mihai", email="razvan.mihai@stackable.tech" }
+    { name = "Razvan Mihai", email = "razvan.mihai@stackable.tech" }
 ]
 description = "Test suite expander for Stackable Kuttl tests."
 readme = "README.md"
@@ -17,8 +17,8 @@ dependencies = [
     "PyYAML>=6.0"
 ]
 [project.optional-dependencies]
-lint = ['pylint', 'mypy']
-dev = ['pre-commit']
+lint = ['ruff==0.0.275', 'mypy==1.4.0']
+dev = ['pre-commit==3.0.3']
 
 [project.scripts]
 beku = "beku.main:main"
@@ -26,3 +26,7 @@ beku = "beku.main:main"
 [project.urls]
 "Homepage" = "https://github.com/stackabletech/beku.py"
 "Bug Tracker" = "https://github.com/stackabletech/beku.py/issues"
+
+[tool.ruff]
+# Allow lines to be as long as 120 characters.
+line-length = 120
