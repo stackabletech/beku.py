@@ -12,6 +12,8 @@ Version: 0.0.7-dev
     rm -rf tests/_work && beku
     cd tests/_work && kubectl kuttl test
 
+Also see the `examples` folder.
+
 ## Description
 
 Fast Kuttl tests expander for Stackable integration tests.
@@ -29,6 +31,7 @@ Update the version in:
 Update the CHANGELOG.
 Commit and tag.
 Build and publish:
+
     rm -rf dist/
     python -m build --wheel .
     twine upload dist/*
