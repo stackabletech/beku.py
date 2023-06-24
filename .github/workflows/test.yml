@@ -20,4 +20,4 @@ jobs:
         pip install '.[dev]'
     - name: Run unit tests
       run: |
-        python -m unittest discover -v
+        python -m unittest discover -v -s src/
