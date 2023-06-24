@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from os import path
 
-from .testsuite import renderer_from_file, expand
+from beku.kuttl import renderer_from_file, expand
 from .version import __version__
 
 

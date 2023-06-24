@@ -1,10 +1,10 @@
 import textwrap
 import unittest
 
-from beku.testsuite import renderer_from_stream
+from beku.kuttl import renderer_from_stream
 
 
-class TestSum(unittest.TestCase):
+class TestRenderFromStream(unittest.TestCase):
     def test_resolve_explicit_select(self):
         fixture = textwrap.dedent("""
             ---
@@ -46,7 +46,7 @@ class TestSum(unittest.TestCase):
         ets = renderer_from_stream(fixture)
         # pprint(ets[0].test_cases)
         self.assertEqual(["default", "latest"], [
-                         e.name for e in ets], "Two effective test suite resolved.")
+            e.name for e in ets], "Two effective test suite resolved.")
         self.assertEqual(7, len(ets[0].test_cases),
                          "The [default] test suite has 7 test cases.")
         self.assertEqual(3, len(ets[1].test_cases),
@@ -90,7 +90,7 @@ class TestSum(unittest.TestCase):
         ets = renderer_from_stream(fixture)
         # pprint(ets[0].test_cases)
         self.assertEqual(["default", "latest"], [
-                         e.name for e in ets], "Two effective test suite resolved.")
+            e.name for e in ets], "Two effective test suite resolved.")
         self.assertEqual(9, len(ets[0].test_cases),
                          "The [default] test suite has 9 test cases.")
         self.assertEqual(2, len(ets[1].test_cases),

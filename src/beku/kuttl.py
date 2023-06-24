@@ -82,8 +82,9 @@ class TestTemplate:
         return dest
 
 
-def test_source_with_context(file_name: str, source_dir: str, dest_dir: str, env: Environment,
-                             values: Dict[str, str]) -> TestFile | TestTemplate:
+def make_test_source_with_context(file_name: str, source_dir: str, dest_dir: str, env: Environment,
+                                  values: Dict[str, str]) -> TestFile | TestTemplate:
+    """Construct a test source object (file or template) from the given arguments."""
     if re.search(PATTERN_EXTENSION_JINJA, file_name):
         return TestTemplate(file_name=file_name, source_dir=source_dir, dest_dir=dest_dir, env=env, values=values)
 
@@ -92,13 +93,20 @@ def test_source_with_context(file_name: str, source_dir: str, dest_dir: str, env
 
 @dataclass(frozen=True)
 class TestCase:
-    """Test case definition."""
+    """A test case is an instance of  test definition together with a set of Jinja variables used to render all
+    templates that are part of the said test definition.
+
+    It is expanded to a folder called "<test-definition>_<name_1>-<value_1>-..._<name_n>-<value_n>" where:
+    * "test-definition" is the name of the test
+    * "name_k" is the name of a Jinja variable
+    * "value_k" is the value of the Jinja variable.
+    """
     name: str
     values: Dict[str, str]
 
     @cached_property
     def tid(self) -> str:
-        """Return the test id."""
+        """Return the test id. Used as destination folder name for the generated test case."""
         return "_".join(
             chain(
                 [self.name],
@@ -107,7 +115,7 @@ class TestCase:
         )
 
     def expand(self, template_dir: str, target_dir: str) -> None:
-        """Expand test case."""
+        """Expand test case This will create the target folder, copy files and render render templates."""
         logging.info("Expanding test case id [%s]", self.tid)
         td_root = path.join(template_dir, self.name)
         tc_root = path.join(target_dir, self.name, self.tid)
@@ -127,8 +135,10 @@ class TestCase:
                 _mkdir_ignore_exists(
                     path.join(tc_root, root[len(td_root) + 1:], dir_name))
             for file_name in files:
-                test_source = test_source_with_context(file_name, root, path.join(tc_root, root[len(td_root) + 1:]),
-                                                       test_env, self.values)
+                test_source = make_test_source_with_context(file_name, root,
+                                                            path.join(
+                                                                tc_root, root[len(td_root) + 1:]),
+                                                            test_env, self.values)
                 test_source.build_destination()
 
 
@@ -152,10 +162,23 @@ class TestDefinition:
 
 @dataclass(frozen=True)
 class TestSuitePatchDimension:
+    """Apply a patch expression to a list of test dimensions.
+
+    Attributes:
+        name (Optional[str]) : Name of the dimension to patch. If None, all dimensions are patched.
+        expr (Optional[str]) : Expression to apply when patching a dimension's value.
+
+    Possible expressions are:
+    * None : no patch is applied.
+    * first : the first element in a dimension sequence is retained. All others are discarded.
+    * last :  the last element in a dimension sequence is retained. All others are discarded.
+    * <substring> : elements the contain the given <substring> are retained. All others are discarded.
+    """
     name: Optional[str]
     expr: Optional[str]
 
-    def patch_dim_values(self, dims: List[TestDimension]) -> List[TestDimension]:
+    def patch_dimensions(self, dims: List[TestDimension]) -> List[TestDimension]:
+        """"Patch the given dimensions according to expr attribute."""
         result = []
         for dim in dims:
             if not self.name or self.name == dim.name:
@@ -175,38 +198,62 @@ class TestSuitePatchDimension:
         return result
 
 
-@dataclass
+@dataclass(frozen=True)
 class TestSuitePatch:
+    """A set of patches to apply to one or more test definitions.
+
+    Attributes:
+        test (Optional[str]) : Name of the test to apply patches to. If None, the dimension patches will be applied
+                               to all test definitions. In that case, the dimensions to patch must be present in
+                               all test definitions.
+        patches : List of dimension patches to apply."""
     test: Optional[str]
-    patch_dimensions: List[TestSuitePatchDimension]
+    patches: List[TestSuitePatchDimension]
 
     @classmethod
     def from_dict(cls, _dict: Dict[str, Any]) -> TestSuitePatch:
         return TestSuitePatch(test=_dict.get('test', None),
-                              patch_dimensions=[
+                              patches=[
                                   TestSuitePatchDimension(name=p.get("name", None), expr=p.get("expr", None)) for p in
                                   _dict.get('dimensions', [])])
 
-    def patch(self, test_name: str, dims: List[TestDimension]) -> List[TestDimension]:
-        result = {}
-        for _pd in self.patch_dimensions:
-            for dim in _pd.patch_dim_values(dims):
-                result[dim.name] = dim
-        return list(result.values())
+    def patch_dimensions(self, test_name: str, dims: List[TestDimension]) -> List[TestDimension]:
+        """Patch a list of dimensions by applying the patches attributes to it.
+        If multiple dimension patches apply to the same dimension, only the last patch will take effect and all other
+        patches are discarded."""
+        if self._may_patch(test_name):
+            result = {}
+            for _pd in self.patches:
+                for dim in _pd.patch_dimensions(dims):
+                    result[dim.name] = dim
+            return list(result.values())
+        return dims
+
+    def _may_patch(self, test_name: str) -> bool:
+        """A patch can be applied if test_name matches the test attribute or the test attribute is None."""
+        return (self.test and self.test == test_name) or not self.test
 
 
 @dataclass(frozen=True)
 class TestSuite:
+    """A test suite contains a list of test definitions and the any corresponding patches to apply to their dimensions
+    before, expanding them.
+
+    Attributes:
+        name (str) : Name of the test suite.
+        select (List[str]) : Names of test definitions to select.
+        patches : List of patches to apply to the selected tests.
+    """
     name: str
     select: List[str]
-    patch: List[TestSuitePatch]
+    patches: List[TestSuitePatch]
 
     @classmethod
     def from_dict(cls, _dict: Dict[str, Any]) -> TestSuite:
         if not _dict["name"]:
             raise ValueError("Test suites must have a [name] property")
         return TestSuite(name=_dict['name'], select=_dict.get('select', []),
-                         patch=[TestSuitePatch.from_dict(p) for p in _dict.get('patch', [])])
+                         patches=[TestSuitePatch.from_dict(p) for p in _dict.get('patch', [])])
 
     def select_tests(self, tests: List[TestDefinition]) -> List[TestDefinition]:
         """Return tests that match the selection list and discard all others. Return the given tests if the selection
@@ -221,10 +268,10 @@ class TestSuite:
         return tests
 
     def patch_dimensions(self, test_name: str, dims: List[TestDimension]) -> List[TestDimension]:
-        if self.patch:
+        if self.patches:
             result = []
-            for test_patch in self.patch:
-                result.extend(test_patch.patch(test_name, dims))
+            for patch in self.patches:
+                result.extend(patch.patch_dimensions(test_name, dims))
             return result
         return dims
 
@@ -286,7 +333,7 @@ def renderer_from_stream(stream) -> List[EffectiveTestSuite]:
         TestDefinition(t["name"], t["dimensions"]) for t in tin["tests"]
     ]
 
-    test_suites = [TestSuite(name="default", select=[], patch=[])]
+    test_suites = [TestSuite(name="default", select=[], patches=[])]
     if "suites" in tin:
         test_suites.extend([
             TestSuite.from_dict(t) for t in tin["suites"]
