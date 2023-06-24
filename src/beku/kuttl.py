@@ -221,6 +221,10 @@ class TestSuitePatch:
         """Patch a list of dimensions by applying the patches attributes to it.
         If multiple dimension patches apply to the same dimension, only the last patch will take effect and all other
         patches are discarded."""
+        if self.test and self.test != test_name:
+            logging.debug(
+                f"Skipping patch for test {[self.test]} for test [{test_name}]")
+
         if self._may_patch(test_name):
             result = {}
             for _pd in self.patches:
