@@ -1,0 +1,67 @@
+#
+# These tests can run against an OpenShift cluster, provided you perform the following
+# steps manually before starting them with scripts/run_tests.sh
+#
+# 1. Set the "openshift" dimension below to "true" (with quotes)
+---
+dimensions:
+  - name: airflow
+    values:
+      - 2.2.4-stackable0.0.0-dev
+      - 2.2.5-stackable0.0.0-dev
+      - 2.4.1-stackable0.0.0-dev
+      - 2.6.1-stackable0.0.0-dev
+  - name: airflow-latest
+    values:
+      - 2.6.1-stackable0.0.0-dev
+  - name: ldap-authentication
+    values:
+      - no-tls
+      - insecure-tls
+      - server-verification-tls
+  - name: openshift
+    values:
+      - "false"
+tests:
+  - name: smoke
+    dimensions:
+      - airflow
+      - openshift
+  - name: mount-dags-configmap
+    dimensions:
+      - airflow-latest
+      - openshift
+  - name: mount-dags-gitsync
+    dimensions:
+      - airflow-latest
+      - openshift
+  - name: ldap
+    dimensions:
+      - airflow-latest
+      - openshift
+      - ldap-authentication
+  - name: resources
+    dimensions:
+      - airflow-latest
+      - openshift
+  - name: orphaned-resources
+    dimensions:
+      - airflow-latest
+      - openshift
+  - name: logging
+    dimensions:
+      - airflow
+      - openshift
+  - name: cluster-operation
+    dimensions:
+      - airflow-latest
+      - openshift
+
+suites:
+  - name: latest # this suite will set all dimension values to the latest (last) value
+    patch:
+      - dimensions:
+        - expr: last
+  - name: smoke # this suite will only select the smoke tests
+    select:
+      - smoke

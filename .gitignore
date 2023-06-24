@@ -2,3 +2,4 @@
 build
 dist
 src/beku_stackabletech.egg-info
+examples/suites/tests/_work

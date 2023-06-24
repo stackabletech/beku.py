@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Add support for Kuttl test suites and improve CI ([#4])
+
+[#4]: https://github.com/stackabletech/beku.py/pull/4)
+
 ## [0.0.6] - 2023-06-21
 
 - Install and run pylint and mypy.
@@ -33,7 +37,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Enable `trim_blocks` when processing Jinja templates to avoid spurious new lines. These can lead to broken shell commands.
+- Enable `trim_blocks` when processing Jinja templates to avoid spurious new lines. These can lead to broken shell
+  commands.
 
 ## [0.0.1] - 2022-12-20
 
