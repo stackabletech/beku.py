@@ -342,8 +342,9 @@ def renderer_from_stream(stream) -> List[EffectiveTestSuite]:
         test_suites.extend([
             TestSuite.from_dict(t) for t in tin["suites"]
         ])
-    else:
-        test_suites.append(TestSuite(name="default", select=[], patches=[]))
+    # Add the default test suite so that it can always be selected regardless of whether other test suites
+    # are defined or not.
+    test_suites.append(TestSuite(name="default", select=[], patches=[]))
 
     return _resolve_effective_test_suites(dimensions, test_def, test_suites)
 
