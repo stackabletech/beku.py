@@ -6,6 +6,24 @@ from beku.kuttl import renderer_from_stream, EffectiveTestSuite, TestCase
 
 class TestRenderFromStream(unittest.TestCase):
 
+    def test_default_test_suite(self):
+        fixture = textwrap.dedent("""
+            ---
+            dimensions:
+              - name: druid
+                values:
+                  - 24.0.0-stackable0.0.0-dev
+            tests:
+              - name: smoke
+                dimensions:
+                  - druid""")
+        ets = renderer_from_stream(fixture)
+        expected = EffectiveTestSuite(name='default',
+                                      test_cases=[TestCase(name='smoke',
+                                                           values={'druid': '24.0.0-stackable0.0.0-dev'})])
+        self.assertEqual(
+            expected, ets[0], "No select, patch implicitly selected tests smoke")
+
     def test_patch_implicit_select(self):
         fixture = textwrap.dedent("""
             ---
@@ -30,7 +48,7 @@ class TestRenderFromStream(unittest.TestCase):
                                       test_cases=[TestCase(name='smoke',
                                                            values={'druid': '24.0.0-stackable0.0.0-dev'})])
         self.assertEqual(
-            expected, ets[1], "No select, patch implicitly selected tests smoke")
+            expected, ets[0], "No select, patch implicitly selected tests smoke")
 
     def test_patch_ignores_test_that_was_not_selected(self):
         fixture = textwrap.dedent("""
@@ -59,7 +77,7 @@ class TestRenderFromStream(unittest.TestCase):
 
         ets = renderer_from_stream(fixture)
 
-        self.assertEqual(["resources"], list(dict.fromkeys([tc.name for tc in ets[1].test_cases])),
+        self.assertEqual(["resources"], list(dict.fromkeys([tc.name for tc in ets[0].test_cases])),
                          "Only the [resources] test definition was selected.")
 
     def test_patch_the_same_dimension_twice(self):
@@ -89,7 +107,7 @@ class TestRenderFromStream(unittest.TestCase):
         expected = EffectiveTestSuite(name='two-patches-on-the-same-test',
                                       test_cases=[TestCase(name='smoke',
                                                            values={'druid': '26.0.0-stackable0.0.0-dev'})])
-        self.assertEqual(expected, ets[1], "Last patch wins")
+        self.assertEqual(expected, ets[0], "Last patch wins")
 
     def test_patch_the_same_test_twice(self):
         fixture = textwrap.dedent("""
@@ -120,7 +138,7 @@ class TestRenderFromStream(unittest.TestCase):
         expected = EffectiveTestSuite(name='two-patches-on-the-same-test',
                                       test_cases=[TestCase(name='smoke',
                                                            values={'druid': '26.0.0-stackable0.0.0-dev'})])
-        self.assertEqual(expected, ets[1], "Last patch wins")
+        self.assertEqual(expected, ets[0], "Last patch wins")
 
     def test_patch_str_expression(self):
         fixture = textwrap.dedent("""
@@ -147,7 +165,7 @@ class TestRenderFromStream(unittest.TestCase):
         expected = EffectiveTestSuite(name='select-25.0.0',
                                       test_cases=[TestCase(name='smoke',
                                                            values={'druid': '25.0.0-stackable0.0.0-dev'})])
-        self.assertEqual(expected, ets[1], "String expression works")
+        self.assertEqual(expected, ets[0], "String expression works")
 
     def test_resolve_explicit_select(self):
         fixture = textwrap.dedent("""
@@ -188,14 +206,9 @@ class TestRenderFromStream(unittest.TestCase):
                       - name: druid
                         expr: last""")
         ets = renderer_from_stream(fixture)
-        # pprint(ets[0].test_cases)
-        self.assertEqual(["default", "latest"], [
-            e.name for e in ets], "Two effective test suite resolved.")
-        self.assertEqual(7, len(ets[0].test_cases),
-                         "The [default] test suite has 7 test cases.")
-        self.assertEqual(3, len(ets[1].test_cases),
+        self.assertEqual(3, len(ets[0].test_cases),
                          "The [latest] test suite has 3 test cases.")
-        self.assertEqual(["smoke", "resources"], list(dict.fromkeys([tc.name for tc in ets[1].test_cases])),
+        self.assertEqual(["smoke", "resources"], list(dict.fromkeys([tc.name for tc in ets[0].test_cases])),
                          "Two test definitions were selected.")
 
     def test_resolve_select_all(self):
@@ -232,12 +245,7 @@ class TestRenderFromStream(unittest.TestCase):
                   - dimensions:
                       - expr: last""")
         ets = renderer_from_stream(fixture)
-        # pprint(ets[0].test_cases)
-        self.assertEqual(["default", "latest"], [
-            e.name for e in ets], "Two effective test suite resolved.")
-        self.assertEqual(9, len(ets[0].test_cases),
-                         "The [default] test suite has 9 test cases.")
-        self.assertEqual(2, len(ets[1].test_cases),
+        self.assertEqual(2, len(ets[0].test_cases),
                          "The [latest] test suite has 2 test cases.")
         self.assertEqual(["smoke", "resources"], list(dict.fromkeys([tc.name for tc in ets[0].test_cases])),
                          "Two test definitions were selected.")

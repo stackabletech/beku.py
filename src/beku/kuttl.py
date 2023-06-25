@@ -337,11 +337,14 @@ def renderer_from_stream(stream) -> List[EffectiveTestSuite]:
         TestDefinition(t["name"], t["dimensions"]) for t in tin["tests"]
     ]
 
-    test_suites = [TestSuite(name="default", select=[], patches=[])]
+    test_suites = []
     if "suites" in tin:
         test_suites.extend([
             TestSuite.from_dict(t) for t in tin["suites"]
         ])
+    else:
+        test_suites.append(TestSuite(name="default", select=[], patches=[]))
+
     return _resolve_effective_test_suites(dimensions, test_def, test_suites)
 
 

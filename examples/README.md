@@ -4,6 +4,9 @@ This folder contains configuration examples for Beku.
 
 ## Test Suites
 
+Test suites are an optional property of the `test-definition.yaml` file. If no test suite is explicitly defined,
+a `default` test suite is generated that selects all test definitons without patching any dimensions.
+
 The folder `suites` contains an example on how to configure test suites.
 
 The file `suites/test/test-definition.yaml` shows example configurations for two test suites:
