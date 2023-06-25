@@ -142,7 +142,7 @@ class TestCase:
                 test_source.build_destination()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=True)
 class TestDimension:
     """Test dimension."""
     name: str
@@ -172,25 +172,26 @@ class TestSuitePatchDimension:
     * None : no patch is applied.
     * first : the first element in a dimension sequence is retained. All others are discarded.
     * last :  the last element in a dimension sequence is retained. All others are discarded.
-    * <substring> : elements the contain the given <substring> are retained. All others are discarded.
+    * <string> : set the dim value to <string> and ignore other values.
     """
     name: Optional[str]
     expr: Optional[str]
 
-    def patch_dimensions(self, dims: List[TestDimension]) -> List[TestDimension]:
+    def patch_dimensions(self, test_name: str, dims: List[TestDimension]) -> List[TestDimension]:
         """"Patch the given dimensions according to expr attribute."""
         result = []
         for dim in dims:
             if not self.name or self.name == dim.name:
+                patched_values = dim.values
                 if self.expr == 'last':
                     patched_values = [dim.values[-1]]
                 elif self.expr == 'first':
                     patched_values = [dim.values[0]]
-                elif self.expr is None:
-                    patched_values = dim.values
-                else:
-                    patched_values = [
-                        v for v in dim.values if v.find(self.expr) != -1]
+                elif self.expr:
+                    patched_values = [self.expr]
+
+                logging.debug(
+                    f"Patching dimension [{test_name}].[{dim.name}] value [{patched_values}]")
                 result.append(TestDimension(
                     name=dim.name, values=patched_values))
             else:
@@ -226,9 +227,10 @@ class TestSuitePatch:
                 f"Skipping patch for test {[self.test]} for test [{test_name}]")
 
         if self._may_patch(test_name):
+            logging.debug(f"Patching test [{test_name}]")
             result = {}
             for _pd in self.patches:
-                for dim in _pd.patch_dimensions(dims):
+                for dim in _pd.patch_dimensions(test_name, dims):
                     result[dim.name] = dim
             return list(result.values())
         return dims
@@ -272,11 +274,23 @@ class TestSuite:
         return tests
 
     def patch_dimensions(self, test_name: str, dims: List[TestDimension]) -> List[TestDimension]:
+        """Apply all patches sequentially in the order they are defined. Each patch uses the resulting
+        dimensions of the previous patch
+
+        Arguments:
+            test_name (str) : Name of the test to apply the patches.
+            dims (list) : Initial dimensions as per test definition.
+
+        Return:
+            The dimensions after applying all patches.
+        """
         if self.patches:
-            result = []
-            for patch in self.patches:
-                result.extend(patch.patch_dimensions(test_name, dims))
-            return result
+            result = {p.name: p for p in self.patches[0].patch_dimensions(
+                test_name, dims)}
+            for patch in self.patches[1:]:
+                result = {p.name: p for p in patch.patch_dimensions(
+                    test_name, list(result.values()))}
+            return list(result.values())
         return dims
 
 
@@ -354,8 +368,10 @@ def _resolve_effective_test_suites(
 ):
     effective_test_suites = []
     for suite in suites:
+        logging.debug(f"Resolving effective test suite [{suite.name}]")
         test_cases = []
         for test in suite.select_tests(tests):
+            logging.debug(f"Selected test [{suite.name}].[{test.name}]")
             used_dims = [d for d in dims if d.name in test.dimensions]
             effective_dimensions = suite.patch_dimensions(
                 test.name, used_dims)
@@ -364,8 +380,8 @@ def _resolve_effective_test_suites(
             ]
             test_cases.extend(
                 [TestCase(name=test.name, values=dict(tc_dim)) for tc_dim in product(*expanded_test_dims)])
-        effective_test_suites.append(EffectiveTestSuite(
-            name=suite.name, test_cases=test_cases))
+        ets = EffectiveTestSuite(name=suite.name, test_cases=test_cases)
+        effective_test_suites.append(ets)
     return effective_test_suites
 
 

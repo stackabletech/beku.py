@@ -137,8 +137,9 @@ class TestRenderFromStream(unittest.TestCase):
         ets = renderer_from_stream(fixture)
         expected = EffectiveTestSuite(name='two-patches-on-the-same-test',
                                       test_cases=[TestCase(name='smoke',
-                                                           values={'druid': '26.0.0-stackable0.0.0-dev'})])
-        self.assertEqual(expected, ets[0], "Last patch wins")
+                                                           values={'druid': '24.0.0-stackable0.0.0-dev'})])
+        self.assertEqual(
+            expected, ets[0], "First patch select 24.0.0 and the second has only one value to choose from")
 
     def test_patch_str_expression(self):
         fixture = textwrap.dedent("""
@@ -154,17 +155,17 @@ class TestRenderFromStream(unittest.TestCase):
                 dimensions:
                   - druid
             suites:
-              - name: select-25.0.0
+              - name: select-27.0.0
                 patch:
                   - test: smoke
                     dimensions:
                       - name: druid
-                        expr: "25"
+                        expr: "27.0.0"
         """)
         ets = renderer_from_stream(fixture)
-        expected = EffectiveTestSuite(name='select-25.0.0',
+        expected = EffectiveTestSuite(name='select-27.0.0',
                                       test_cases=[TestCase(name='smoke',
-                                                           values={'druid': '25.0.0-stackable0.0.0-dev'})])
+                                                           values={'druid': '27.0.0'})])
         self.assertEqual(expected, ets[0], "String expression works")
 
     def test_resolve_explicit_select(self):
@@ -249,6 +250,45 @@ class TestRenderFromStream(unittest.TestCase):
                          "The [latest] test suite has 2 test cases.")
         self.assertEqual(["smoke", "resources"], list(dict.fromkeys([tc.name for tc in ets[0].test_cases])),
                          "Two test definitions were selected.")
+
+    def test_multiple_patches(self):
+        fixture = textwrap.dedent("""
+            ---
+            dimensions:
+              - name: druid
+                values:
+                  - 24.0.0-stackable0.0.0-dev
+                  - 26.0.0-stackable0.0.0-dev
+              - name: zookeeper
+                values:
+                  - 3.7.0-stackable0.0.0-dev
+                  - 3.8.0-stackable0.0.0-dev
+              - name: openshift
+                values:
+                  - "false"
+            tests:
+              - name: smoke
+                dimensions:
+                  - druid
+                  - zookeeper
+                  - openshift
+            suites:
+              - name: openshift
+                patch:
+                  - dimensions:
+                      - expr: last
+                  -  dimensions:
+                      - name: openshift
+                        expr: "true"
+            """)
+        ets = renderer_from_stream(fixture)
+        expected = EffectiveTestSuite(name='openshift',
+                                      test_cases=[TestCase(name='smoke',
+                                                           values={'druid': '26.0.0-stackable0.0.0-dev',
+                                                                   'openshift': 'true',
+                                                                   'zookeeper': '3.8.0-stackable0.0.0-dev'})])
+
+        self.assertEqual(expected, ets[0])
 
 
 if __name__ == '__main__':
