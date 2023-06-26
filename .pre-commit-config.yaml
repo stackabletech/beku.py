@@ -7,28 +7,41 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: examples/
       - id: check-added-large-files
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0
     hooks:
       - id: detect-secrets
+        exclude: examples/
   - repo: https://github.com/pre-commit/mirrors-autopep8
     rev: v2.0.1
     hooks:
       - id: autopep8
         entry: autopep8
-  - repo: local
-    # These hooks are run from the local virtual env (and it's assumed they are there)
-    # to allow these tools to find project dependencies.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.0.275
     hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [ python ]
+      - id: ruff
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.4.0'
+    hooks:
       - id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        types: [ python ]
         args: ['--install-types', '--non-interactive']
+        additional_dependencies:
+          - "Jinja2>=3.1.2"
+          - "PyYAML>=6.0"
+        exclude: examples/
+  - repo: local
+    hooks:
+      - id: unittest
+        name: unittest
+        entry: python -m unittest discover -v -s src/
+        additional_dependencies:
+          - "Jinja2>=3.1.2"
+          - "PyYAML>=6.0"
+        language: python
+        'types': [python]
+        pass_filenames: false
+        stages: [commit]

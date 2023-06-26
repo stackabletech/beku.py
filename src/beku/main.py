@@ -1,9 +1,10 @@
 """Main entry point."""
+import logging
 from argparse import ArgumentParser, Namespace
 from os import path
-import logging
+
+from beku.kuttl import renderer_from_file, expand
 from .version import __version__
-from .testsuite import TestSuite
 
 
 def parse_cli_args() -> Namespace:
@@ -62,6 +63,15 @@ def parse_cli_args() -> Namespace:
         default="tests/kuttl-test.yaml.jinja2",
     )
 
+    parser.add_argument(
+        "-s",
+        "--suite",
+        help="Name of the test suite to expand. Default: default",
+        type=str,
+        required=False,
+        default="default",
+    )
+
     return parser.parse_args()
 
 
@@ -76,7 +86,7 @@ def main() -> int:
     cli_args = parse_cli_args()
     logging.basicConfig(
         encoding="utf-8", level=_cli_log_level(cli_args.log_level))
-    test_suite = TestSuite(cli_args.test_definition)
+    effective_test_suites = renderer_from_file(cli_args.test_definition)
     # Compatibility warning: add 'tests' to output_dir
     output_dir = path.join(cli_args.output_dir, "tests")
-    return test_suite.expand(cli_args.template_dir, output_dir, cli_args.kuttl_test)
+    return expand(cli_args.suite, effective_test_suites, cli_args.template_dir, output_dir, cli_args.kuttl_test)
