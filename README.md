@@ -1,6 +1,6 @@
 # beku
 
-Version: 0.0.7-dev
+Version: 0.0.7
 
 ## Installation
 
@@ -24,7 +24,7 @@ Fast Kuttl tests expander for Stackable integration tests.
 
 Update the version in:
 
-* `pyptoject.toml`
+* `pyproject.toml`
 * `version.py`
 * `README.md`
 

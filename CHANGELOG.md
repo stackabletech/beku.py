@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.7] - 2023-06-26
+
 - Add support for Kuttl test suites and improve CI ([#4])
 
 [#4]: https://github.com/stackabletech/beku.py/pull/4)
