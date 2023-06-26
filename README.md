@@ -1,6 +1,6 @@
 # beku
 
-Version: 0.0.7
+Version: 0.0.8-dev
 
 ## Installation
 
@@ -26,7 +26,7 @@ Update the version in:
 
 * `pyproject.toml`
 * `version.py`
-* `README.md`
+* `README.md` : version and pip install command.
 
 Update the CHANGELOG.
 Commit and tag.
