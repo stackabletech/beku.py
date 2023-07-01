@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Bugfix: apply multiple patches sequentially to a single test
+
+[#6]: https://github.com/stackabletech/beku.py/pull/6)
+
 ## [0.0.7] - 2023-06-26
 
 - Add support for Kuttl test suites and improve CI ([#4])
