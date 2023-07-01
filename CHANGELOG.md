@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.8] - 2023-07-01
+
 - Bugfix: apply multiple patches sequentially to a single test
 
 [#6]: https://github.com/stackabletech/beku.py/pull/6)

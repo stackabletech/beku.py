@@ -1,9 +1,18 @@
 # beku
 
-Version: 0.0.8-dev
+Version: 0.0.8
 
 ## Installation
 
+We recommend to use [pipx](https://pypa.github.io/pipx/):
+
+    pipx install beku-stackabletech
+
+But you can also use `pip`:
+
+    # from PyPI
+    pip install beku-stackabletech
+    # from GitHub
     pip install git+https://github.com/stackabletech/beku.py.git@master
 
 ## Usage

@@ -1,6 +1,6 @@
 [project]
 name = "beku-stackabletech"
-version = "0.0.8-dev"
+version = "0.0.8"
 authors = [
     { name = "Razvan Mihai", email = "razvan.mihai@stackable.tech" }
 ]
