@@ -228,10 +228,10 @@ class TestSuitePatch:
 
         if self._may_patch(test_name):
             logging.debug(f"Patching test [{test_name}]")
-            result = {}
+            result = {d.name: d for d in dims}
             for _pd in self.patches:
-                for dim in _pd.patch_dimensions(test_name, dims):
-                    result[dim.name] = dim
+                result = {d.name: d for d in _pd.patch_dimensions(
+                    test_name, list(result.values()))}
             return list(result.values())
         return dims
 

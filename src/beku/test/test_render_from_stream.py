@@ -106,8 +106,9 @@ class TestRenderFromStream(unittest.TestCase):
         ets = renderer_from_stream(fixture)
         expected = EffectiveTestSuite(name='two-patches-on-the-same-test',
                                       test_cases=[TestCase(name='smoke',
-                                                           values={'druid': '26.0.0-stackable0.0.0-dev'})])
-        self.assertEqual(expected, ets[0], "Last patch wins")
+                                                           values={'druid': '24.0.0-stackable0.0.0-dev'})])
+        self.assertEqual(
+            expected, ets[0], "Take first and then take last out of that.")
 
     def test_patch_the_same_test_twice(self):
         fixture = textwrap.dedent("""
@@ -266,12 +267,16 @@ class TestRenderFromStream(unittest.TestCase):
               - name: openshift
                 values:
                   - "false"
+              - name: tls
+                values:
+                  - "false"
             tests:
               - name: smoke
                 dimensions:
                   - druid
                   - zookeeper
                   - openshift
+                  - tls
             suites:
               - name: openshift
                 patch:
@@ -280,13 +285,16 @@ class TestRenderFromStream(unittest.TestCase):
                   -  dimensions:
                       - name: openshift
                         expr: "true"
+                      - name: tls
+                        expr: "true"
             """)
         ets = renderer_from_stream(fixture)
         expected = EffectiveTestSuite(name='openshift',
                                       test_cases=[TestCase(name='smoke',
                                                            values={'druid': '26.0.0-stackable0.0.0-dev',
                                                                    'openshift': 'true',
-                                                                   'zookeeper': '3.8.0-stackable0.0.0-dev'})])
+                                                                   'zookeeper': '3.8.0-stackable0.0.0-dev',
+                                                                   'tls': 'true'})])
 
         self.assertEqual(expected, ets[0])
 
