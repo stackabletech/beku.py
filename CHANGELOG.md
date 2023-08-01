@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Delete the output dir before generating tests ([#7]).
+
+[#7]: https://github.com/stackabletech/beku.py/pull/7)
+
 ## [0.0.8] - 2023-07-01
 
 - Bugfix: apply multiple patches sequentially to a single test

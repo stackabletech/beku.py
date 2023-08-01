@@ -2,6 +2,7 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from os import path
+from shutil import rmtree
 
 from beku.kuttl import renderer_from_file, expand
 from .version import __version__
@@ -87,6 +88,7 @@ def main() -> int:
     logging.basicConfig(
         encoding="utf-8", level=_cli_log_level(cli_args.log_level))
     effective_test_suites = renderer_from_file(cli_args.test_definition)
+    rmtree(path=cli_args.output_dir, ignore_errors=True)
     # Compatibility warning: add 'tests' to output_dir
     output_dir = path.join(cli_args.output_dir, "tests")
     return expand(cli_args.suite, effective_test_suites, cli_args.template_dir, output_dir, cli_args.kuttl_test)
