@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.9] - 2023-08-23
+
 ### Added
 
 - Delete the output dir before generating tests ([#7]).
