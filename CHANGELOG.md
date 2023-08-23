@@ -4,9 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
 - Delete the output dir before generating tests ([#7]).
 
+### Changed
+
+- Replace os fs separator ("/") in test case names with underscore ("_") ([#8])
+
 [#7]: https://github.com/stackabletech/beku.py/pull/7)
+[#8]: https://github.com/stackabletech/beku.py/pull/8)
 
 ## [0.0.8] - 2023-07-01
 

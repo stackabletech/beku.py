@@ -106,13 +106,16 @@ class TestCase:
 
     @cached_property
     def tid(self) -> str:
-        """Return the test id. Used as destination folder name for the generated test case."""
-        return "_".join(
+        """Return the test id. Used as destination folder name for the generated test case.
+        The result is part of a full directory name of the test case. Therefore, the OS filesystem
+        directory separator is replaced with underscore.
+        """
+        return re.sub(f"[{os.sep}:]", "_", "_".join(
             chain(
                 [self.name],
                 [f"{k}-{v}" for k, v in self.values.items()],
             )
-        )
+        ))
 
     def expand(self, template_dir: str, target_dir: str) -> None:
         """Expand test case This will create the target folder, copy files and render render templates."""
