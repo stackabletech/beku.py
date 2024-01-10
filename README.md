@@ -19,21 +19,18 @@ pip install beku-stackabletech
 pip install git+https://github.com/stackabletech/beku.py.git@master
 ```
 
-Or via Nix:
-
-<details>
-<summary>NixOs</summary>
+Or via NixOS and Nix Shell:
 
 ```nix
 { lib, pkgs, ... }:
 with lib;
 let
-  beku = (import (pkgs.fetchFromGitHub {
+  beku = pkgs.callPackage(pkgs.fetchFromGitHub {
     owner = "stackabletech";
     repo = "beku.py";
     rev = "145e8210f5786b8128e3af43f60b61f065cc2c39";
     hash = "sha256-hLaIY4BE+VIMeKmS3JLOZy87OC2VuQtbX/NCIbQr2p4="; # use lib.fakeHash to find new hashes when upgrading
-  }) {}).beku;
+  } + "/beku.nix") {};
 in
 {
   packages = with pkgs; [
@@ -44,31 +41,6 @@ in
   // ...
 }
 ```
-
-</details>
-
-<details>
-<summary>Nix Shell</summary>
-
-```nix
-let
-  beku = pkgs.callPackage (pkgs.fetchFromGitHub {
-    owner = "stackabletech";
-    repo = "beku.py";
-    rev = "145e8210f5786b8128e3af43f60b61f065cc2c39";
-    hash = "sha256-hLaIY4BE+VIMeKmS3JLOZy87OC2VuQtbX/NCIbQr2p4="; # use lib.fakeHash to find new hashes when upgrading
-  } + "/beku.nix") {};
-in pkgs.mkShell {
-  buildInputs = with pkgs; [
-    beku
-    # ...
-  ];
-
-  # ...
-}
-```
-
-</details>
 
 ## Usage
 
