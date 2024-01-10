@@ -16,7 +16,7 @@ But you can also use `pip`:
 # from PyPI
 pip install beku-stackabletech
 # from GitHub
-pip install git+https://github.com/stackabletech/beku.py.git@master
+pip install git+https://github.com/stackabletech/beku.py.git@main
 ```
 
 Or via NixOS and Nix Shell:
