@@ -21,6 +21,9 @@ pip install git+https://github.com/stackabletech/beku.py.git@master
 
 Or via Nix:
 
+<details>
+<summary>NixOs</summary>
+
 ```nix
 { lib, pkgs, ... }:
 with lib;
@@ -28,8 +31,8 @@ let
   beku = (import (pkgs.fetchFromGitHub {
     owner = "stackabletech";
     repo = "beku.py";
-    rev = "062defa4da2ec504c38d3a21916e871fd95d03f6"; # commit hash
-    hash = "sha256-Oq8BhByYDptD84551Rodi6T7MwI8e/6dxIX7p0xNK+A="; # use lib.fakeHash to find new hashes when upgrading
+    rev = "145e8210f5786b8128e3af43f60b61f065cc2c39";
+    hash = "sha256-hLaIY4BE+VIMeKmS3JLOZy87OC2VuQtbX/NCIbQr2p4="; # use lib.fakeHash to find new hashes when upgrading
   }) {}).beku;
 in
 {
@@ -41,6 +44,31 @@ in
   // ...
 }
 ```
+
+</details>
+
+<details>
+<summary>Nix Shell</summary>
+
+```nix
+let
+  beku = pkgs.callPackage (pkgs.fetchFromGitHub {
+    owner = "stackabletech";
+    repo = "beku.py";
+    rev = "145e8210f5786b8128e3af43f60b61f065cc2c39";
+    hash = "sha256-hLaIY4BE+VIMeKmS3JLOZy87OC2VuQtbX/NCIbQr2p4="; # use lib.fakeHash to find new hashes when upgrading
+  } + "/beku.nix") {};
+in pkgs.mkShell {
+  buildInputs = with pkgs; [
+    beku
+    # ...
+  ];
+
+  # ...
+}
+```
+
+</details>
 
 ## Usage
 
