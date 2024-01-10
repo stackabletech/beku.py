@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## Added
+
+- Nix build files ([#12])
+
+[#12]: https://github.com/stackabletech/beku.py/pull/12
+
 ## [0.0.9] - 2023-08-23
 
 ### Added
