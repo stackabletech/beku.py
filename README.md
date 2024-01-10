@@ -19,6 +19,29 @@ pip install beku-stackabletech
 pip install git+https://github.com/stackabletech/beku.py.git@master
 ```
 
+Or via Nix:
+
+```nix
+{ lib, pkgs, ... }:
+with lib;
+let
+  beku = (import (pkgs.fetchFromGitHub {
+    owner = "stackabletech";
+    repo = "beku.py";
+    rev = "062defa4da2ec504c38d3a21916e871fd95d03f6"; # commit hash
+    hash = "sha256-Oq8BhByYDptD84551Rodi6T7MwI8e/6dxIX7p0xNK+A="; # use lib.fakeHash to find new hashes when upgrading
+  }) {}).cargo.workspaceMembers.stackablectl.build;
+in
+{
+  packages = with pkgs; [
+    beku
+    # ...
+  ];
+
+  // ...
+}
+```
+
 ## Usage
 
 ```sh
