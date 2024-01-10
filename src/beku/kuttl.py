@@ -131,9 +131,9 @@ class TestCase:
         sub_level: int = 0
         for root, dirs, files in walk(td_root):
             sub_level += 1
-            if sub_level == 5:
+            if sub_level == 8:
                 # Sanity check
-                raise ValueError("Maximum recursive level (5) reached.")
+                raise ValueError("Maximum recursive level (8) reached.")
             for dir_name in dirs:
                 _mkdir_ignore_exists(
                     path.join(tc_root, root[len(td_root) + 1:], dir_name))
