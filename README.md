@@ -30,7 +30,7 @@ let
     repo = "beku.py";
     rev = "062defa4da2ec504c38d3a21916e871fd95d03f6"; # commit hash
     hash = "sha256-Oq8BhByYDptD84551Rodi6T7MwI8e/6dxIX7p0xNK+A="; # use lib.fakeHash to find new hashes when upgrading
-  }) {}).beku.build;
+  }) {}).beku;
 in
 {
   packages = with pkgs; [
