@@ -1,14 +1,17 @@
 { python3 }:
 
+let
+  manifest = (python3.pkgs.lib.importTOML ./pyproject.toml).project;
+in
 python3.pkgs.buildPythonApplication {
-  pname = "beku-stackabletech";
-  version = "0.0.9";
+  pname = manifest.name;
+  version = manifest.version;
 
   format = "pyproject";
 
   src = builtins.path {
     path = ./.;
-    name = "beku-stackabletech";
+    name = manifest.name;
   };
 
   nativeBuildInputs = [
