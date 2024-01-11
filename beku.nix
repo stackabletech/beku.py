@@ -1,9 +1,9 @@
 { python3 }:
-
+with python3;
 let
-  manifest = (python3.pkgs.lib.importTOML ./pyproject.toml).project;
+  manifest = (pkgs.lib.importTOML ./pyproject.toml).project;
 in
-python3.pkgs.buildPythonApplication {
+pkgs.buildPythonApplication {
   pname = manifest.name;
   version = manifest.version;
 
@@ -14,13 +14,13 @@ python3.pkgs.buildPythonApplication {
     name = manifest.name;
   };
 
-  nativeBuildInputs = [
-    python3.pkgs.setuptools
+  nativeBuildInputs = with pkgs; [
+    setuptools
   ];
 
-  propagatedBuildInputs = [
-    python3.pkgs.jinja2
-    python3.pkgs.pyyaml
+  propagatedBuildInputs = with pkgs; [
+    jinja2
+    pyyaml
   ];
 }
 
