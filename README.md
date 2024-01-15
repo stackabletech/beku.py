@@ -64,7 +64,6 @@ beku -i tests/test-definition.yaml -t tests/templates/kuttl -k tests/kuttl-test.
 
 Update the version in:
 
-* `pyproject.toml`
 * `version.py`
 * `README.md` : version and pip install command.
 
