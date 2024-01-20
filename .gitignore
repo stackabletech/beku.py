@@ -4,3 +4,6 @@ dist
 result
 src/beku_stackabletech.egg-info
 examples/suites/tests/_work
+# pixi environments
+.pixi
+
