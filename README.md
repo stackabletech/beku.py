@@ -2,6 +2,17 @@
 
 Version: 0.0.9
 
+Fast [Kuttl](https://kuttl.dev/) tests expander for Stackable integration tests.
+
+```sh
+beku -i tests/test-definition.yaml -t tests/templates/kuttl -k tests/kuttl-test.yaml.jinja2 -o tests/_work
+```
+
+`beku` parses a test definition YAML file together with a directory of templated Kuttl test definitions.
+From this it generates Kuttl test suites which can then be run with plain Kuttl.
+This was built on top of Kuttl to support running tests with different version combinations of products, or slightly different features enabled,
+without having to duplicate tests.
+
 ## Installation
 
 We recommend to use [pipx](https://pypa.github.io/pipx/):
@@ -51,14 +62,6 @@ cd tests/_work && kubectl kuttl test
 ```
 
 Also see the `examples` folder.
-
-## Description
-
-Fast Kuttl tests expander for Stackable integration tests.
-
-```sh
-beku -i tests/test-definition.yaml -t tests/templates/kuttl -k tests/kuttl-test.yaml.jinja2 -o tests/_work
-```
 
 ## Release a new version
 
