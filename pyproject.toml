@@ -1,23 +1,19 @@
 [project]
 name = "beku-stackabletech"
 version = "0.0.9"
-authors = [
-    { name = "Razvan Mihai", email = "razvan.mihai@stackable.tech" }
-]
+authors = [{ name = "Razvan Mihai", email = "razvan.mihai@stackable.tech" }]
 description = "Test suite expander for Stackable Kuttl tests."
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
-dependencies = [
-    "Jinja2>=3.1.2",
-    "PyYAML>=6.0"
-]
+dependencies = ["Jinja2>=3.1.2", "PyYAML>=6.0"]
 [project.optional-dependencies]
 lint = ['ruff==0.0.275', 'mypy==1.4.0']
+publish = ['twine==5.0.0', 'build==1.2.1']
 
 [project.scripts]
 beku = "beku.main:main"
