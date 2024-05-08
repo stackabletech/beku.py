@@ -6,9 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ## Added
 
-- Nix build files ([#12])
+- Nix build files ([#13])
+- Raise build versions ([#13])
+- Use setuptools to build the project ([#13])
 
-[#12]: https://github.com/stackabletech/beku.py/pull/12
+[#12]: https://github.com/stackabletech/beku.py/pull/13
 
 ## [0.0.9] - 2023-08-23
 

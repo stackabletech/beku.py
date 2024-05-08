@@ -1,6 +1,7 @@
 .env
 build
 dist
+__pycache__
 result
 src/beku_stackabletech.egg-info
 examples/suites/tests/_work

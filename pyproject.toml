@@ -1,9 +1,10 @@
 [build-system]
-requires = ["hatchling >= 1.13.0"]
-build-backend = "hatchling.build"
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "beku-stackabletech"
+dynamic = ["version"]
 authors = [{ name = "Razvan Mihai", email = "razvan.mihai@stackable.tech" }]
 description = "Test suite expander for Stackable Kuttl tests."
 readme = "README.md"
@@ -15,10 +16,9 @@ classifiers = [
 ]
 dependencies = ["Jinja2>=3.1.2", "PyYAML>=6.0"]
 
-dynamic = ["version"]
-
 [project.optional-dependencies]
-lint = ['ruff==0.0.275', 'mypy==1.4.0']
+lint = ['ruff>=0.4', 'mypy>=1.10']
+publish = ['twine>=5.0', 'build>=1.2']
 
 [project.scripts]
 beku = "beku.main:main"
@@ -34,8 +34,5 @@ line-length = 120
 [tool.mypy]
 exclude = ['examples/']
 
-[tool.hatch.version]
-path = "src/beku/version.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/beku"]
+[tool.setuptools.dynamic]
+version = { attr = "beku.version.__version__" }
