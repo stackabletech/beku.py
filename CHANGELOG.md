@@ -6,9 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ## Added
 
-- Nix build files ([#12])
+- Nix build files ([#18])
+- Raise build versions ([#18])
+- Use setuptools to build the project ([#18])
+- Drop support for 3.10 and add support for 3.12 ([#18])
 
-[#12]: https://github.com/stackabletech/beku.py/pull/12
+[#18]: https://github.com/stackabletech/beku.py/pull/18
 
 ## [0.0.9] - 2023-08-23
 

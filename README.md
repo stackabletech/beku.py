@@ -67,8 +67,7 @@ Also see the `examples` folder.
 
 Update the version in:
 
-* `pyproject.toml`
-* `version.py`
+* `src/beku/version.py`
 * `README.md` : version and pip install command.
 
 Update the CHANGELOG.
@@ -77,6 +76,6 @@ Build and publish:
 
 ```sh
 rm -rf dist/
-python -m build --wheel .
+python -m build --sdist --wheel .
 twine upload dist/*
 ```
