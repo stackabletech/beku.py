@@ -1,4 +1,4 @@
-{ python3, pkgs }:
+{ python3, runCommand, lib }:
 let
   # I wish there was a better way. If the command fails, it is very hard to see 
   # that the problem is here. Perhaps there is some way to evaluate it in python
