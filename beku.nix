@@ -4,7 +4,7 @@ let
   # that the problem is here. Perhaps there is some way to evaluate it in python
   # and reference __version__ directly?
   version = builtins.readFile (runCommand "foo" { src = [ ./src ]; } ''
-    grep -E '^__version__' $src/beku/version.py | grep -o '".*"' | tr -d \" > $out
+    PYTHONPATH=$src ${python3}/bin/python -c 'import beku.version; print(beku.version.__version__)' > $out
   '');
   manifest = (lib.importTOML ./pyproject.toml).project;
 in
