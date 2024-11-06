@@ -331,6 +331,18 @@ def expand(
 
 
 def determine_namespace(testcase_name: str) -> str:
+    """Generate a namespace name for the given test case.
+
+    The format of the namespace name is "kuttl-<hash>" where hash is the first 10 chars of the test
+    case's sha256 value.
+
+    There is an analogous function in "kubectl-kuttl" that generates the exact same namespace name.
+    These two have to be kept in sync!
+
+    The tests use the namespace name also for other kubernetes objects like "metadata.name" which have
+    different syntactic restrictions.
+    Therefore, to be on the safe side, the namespace name is kept as simple as possible.
+    """
     hash = sha256(testcase_name.encode("utf-8")).hexdigest()
     return f"kuttl-{hash[:10]}"
 
