@@ -7,6 +7,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from functools import cached_property
+from hashlib import sha256
 from itertools import product, chain
 from os import walk, path, makedirs
 from shutil import copy2
@@ -132,6 +133,7 @@ class TestCase:
         _mkdir_ignore_exists(tc_root)
         test_env = Environment(loader=FileSystemLoader(path.join(template_dir, self.name)), trim_blocks=True)
         test_env.globals["lookup"] = ansible_lookup
+        test_env.globals["NAMESPACE"] = determine_namespace(self.tid)
         sub_level: int = 0
         for root, dirs, files in walk(td_root):
             sub_level += 1
@@ -326,6 +328,11 @@ def expand(
     except StopIteration as exc:
         raise ValueError(f"Cannot expand test suite [{suite}] because cannot find it in [{kuttl_tests}]") from exc
     return 0
+
+
+def determine_namespace(testcase_name: str) -> str:
+    hash = sha256(testcase_name.encode("utf-8")).hexdigest()
+    return f"kuttl-{testcase_name[:32]}-{hash[:10]}"
 
 
 def _expand_kuttl_tests(test_cases, output_dir: str, kuttl_tests: str) -> None:
