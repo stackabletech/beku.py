@@ -69,6 +69,14 @@ def parse_cli_args() -> Namespace:
         default="default",
     )
 
+    parser.add_argument(
+        "-n",
+        "--namespace",
+        help="Name of the namespace to use for tests. Default: kuttl-<test name sha256>",
+        type=str,
+        required=False,
+    )
+
     return parser.parse_args()
 
 
@@ -86,4 +94,11 @@ def main() -> int:
     rmtree(path=cli_args.output_dir, ignore_errors=True)
     # Compatibility warning: add 'tests' to output_dir
     output_dir = path.join(cli_args.output_dir, "tests")
-    return expand(cli_args.suite, effective_test_suites, cli_args.template_dir, output_dir, cli_args.kuttl_test)
+    return expand(
+        cli_args.suite,
+        effective_test_suites,
+        cli_args.template_dir,
+        output_dir,
+        cli_args.kuttl_test,
+        cli_args.namespace,
+    )
