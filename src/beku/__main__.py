@@ -1,4 +1,5 @@
 """Package entry point."""
+
 import sys
 from .main import main
 
