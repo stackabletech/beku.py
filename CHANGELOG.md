@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## 0.0.10 - 2024-11-06
+
 ## Added
 
 - Nix build files ([#18])
