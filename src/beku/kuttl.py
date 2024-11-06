@@ -7,6 +7,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from functools import cached_property
+from hashlib import sha256
 from itertools import product, chain
 from os import walk, path, makedirs
 from shutil import copy2
@@ -124,7 +125,7 @@ class TestCase:
             ),
         )
 
-    def expand(self, template_dir: str, target_dir: str) -> None:
+    def expand(self, template_dir: str, target_dir: str, namespace: str) -> None:
         """Expand test case This will create the target folder, copy files and render render templates."""
         logging.info("Expanding test case id [%s]", self.tid)
         td_root = path.join(template_dir, self.name)
@@ -132,6 +133,7 @@ class TestCase:
         _mkdir_ignore_exists(tc_root)
         test_env = Environment(loader=FileSystemLoader(path.join(template_dir, self.name)), trim_blocks=True)
         test_env.globals["lookup"] = ansible_lookup
+        test_env.globals["NAMESPACE"] = determine_namespace(self.tid, namespace)
         sub_level: int = 0
         for root, dirs, files in walk(td_root):
             sub_level += 1
@@ -313,7 +315,12 @@ class EffectiveTestSuite:
 
 
 def expand(
-    suite: str, effective_test_suites: List[EffectiveTestSuite], template_dir: str, output_dir: str, kuttl_tests: str
+    suite: str,
+    effective_test_suites: List[EffectiveTestSuite],
+    template_dir: str,
+    output_dir: str,
+    kuttl_tests: str,
+    namespace: str,
 ) -> int:
     """Expand test suite."""
     try:
@@ -322,10 +329,30 @@ def expand(
         _mkdir_ignore_exists(output_dir)
         _expand_kuttl_tests(ets.test_cases, output_dir, kuttl_tests)
         for test_case in ets.test_cases:
-            test_case.expand(template_dir, output_dir)
+            test_case.expand(template_dir, output_dir, namespace)
     except StopIteration as exc:
         raise ValueError(f"Cannot expand test suite [{suite}] because cannot find it in [{kuttl_tests}]") from exc
     return 0
+
+
+def determine_namespace(testcase_name: str, prefered_namespace: str) -> str:
+    """Generate a namespace name for the given test case unless a prefered namespace name is given.
+
+    The format of the namespace name is "kuttl-<hash>" where hash is the first 10 chars of the test
+    case's sha256 value.
+
+    There is an analogous function in "kubectl-kuttl" that generates the exact same namespace name.
+    These two have to be kept in sync!
+
+    The tests use the namespace name also for other kubernetes objects like "metadata.name" which have
+    different syntactic restrictions.
+    Therefore, to be on the safe side, the namespace name is kept as simple as possible.
+    """
+    if prefered_namespace:
+        return prefered_namespace
+    else:
+        hash = sha256(testcase_name.encode("utf-8")).hexdigest()
+        return f"kuttl-{hash[:10]}"
 
 
 def _expand_kuttl_tests(test_cases, output_dir: str, kuttl_tests: str) -> None:
