@@ -4,9 +4,9 @@ import requests
 
 def check_processed_events():
     response = requests.post(
-        'http://airflow-vector-aggregator:8686/graphql',
+        "http://airflow-vector-aggregator:8686/graphql",
         json={
-            'query': """
+            "query": """
                 {
                     transforms(first:100) {
                         nodes {
@@ -20,22 +20,20 @@ def check_processed_events():
                     }
                 }
             """
-        }
+        },
     )
 
-    assert response.status_code == 200, \
-        'Cannot access the API of the vector aggregator.'
+    assert response.status_code == 200, "Cannot access the API of the vector aggregator."
 
     result = response.json()
 
-    transforms = result['data']['transforms']['nodes']
+    transforms = result["data"]["transforms"]["nodes"]
     for transform in transforms:
-        processedEvents = transform['metrics']['processedEventsTotal']['processedEventsTotal']
-        componentId = transform['componentId']
-        assert processedEvents > 0, \
-            f'No events were processed in "{componentId}".'
+        processedEvents = transform["metrics"]["processedEventsTotal"]["processedEventsTotal"]
+        componentId = transform["componentId"]
+        assert processedEvents > 0, f'No events were processed in "{componentId}".'
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     check_processed_events()
-    print('Test successful!')
+    print("Test successful!")

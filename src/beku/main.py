@@ -1,4 +1,5 @@
 """Main entry point."""
+
 import logging
 from argparse import ArgumentParser, Namespace
 from os import path
@@ -10,14 +11,9 @@ from .version import __version__
 
 def parse_cli_args() -> Namespace:
     """Parse command line args."""
-    parser = ArgumentParser(
-        description="Kuttl test expander for the Stackable Data Platform")
+    parser = ArgumentParser(description="Kuttl test expander for the Stackable Data Platform")
     parser.add_argument(
-        "-v",
-        "--version",
-        help="Display application version",
-        action='version',
-        version=f'%(prog)s {__version__}'
+        "-v", "--version", help="Display application version", action="version", version=f"%(prog)s {__version__}"
     )
 
     parser.add_argument(
@@ -85,8 +81,7 @@ def _cli_log_level(cli_arg: str) -> int:
 def main() -> int:
     """Main"""
     cli_args = parse_cli_args()
-    logging.basicConfig(
-        encoding="utf-8", level=_cli_log_level(cli_args.log_level))
+    logging.basicConfig(encoding="utf-8", level=_cli_log_level(cli_args.log_level))
     effective_test_suites = renderer_from_file(cli_args.test_definition)
     rmtree(path=cli_args.output_dir, ignore_errors=True)
     # Compatibility warning: add 'tests' to output_dir

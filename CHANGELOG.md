@@ -23,20 +23,20 @@ All notable changes to this project will be documented in this file.
 
 - Replace os fs separator ("/") in test case names with underscore ("_") ([#8])
 
-[#7]: https://github.com/stackabletech/beku.py/pull/7)
-[#8]: https://github.com/stackabletech/beku.py/pull/8)
+[#7]: https://github.com/stackabletech/beku.py/pull/7
+[#8]: https://github.com/stackabletech/beku.py/pull/8
 
 ## [0.0.8] - 2023-07-01
 
-- Bugfix: apply multiple patches sequentially to a single test
+- Bugfix: apply multiple patches sequentially to a single test ([#6])
 
-[#6]: https://github.com/stackabletech/beku.py/pull/6)
+[#6]: https://github.com/stackabletech/beku.py/pull/6
 
 ## [0.0.7] - 2023-06-26
 
 - Add support for Kuttl test suites and improve CI ([#4])
 
-[#4]: https://github.com/stackabletech/beku.py/pull/4)
+[#4]: https://github.com/stackabletech/beku.py/pull/4
 
 ## [0.0.6] - 2023-06-21
 
