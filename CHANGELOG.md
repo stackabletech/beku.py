@@ -10,8 +10,10 @@ All notable changes to this project will be documented in this file.
 - Raise build versions ([#18])
 - Use setuptools to build the project ([#18])
 - Drop support for 3.10 and add support for 3.12 ([#18])
+- Added NAMESPACE to template globals and --namespace cli argument for preferred names ([#30])
 
 [#18]: https://github.com/stackabletech/beku.py/pull/18
+[#30]: https://github.com/stackabletech/beku.py/pull/30
 
 ## [0.0.9] - 2023-08-23
 
