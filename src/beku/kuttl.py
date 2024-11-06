@@ -332,7 +332,7 @@ def expand(
 
 def determine_namespace(testcase_name: str) -> str:
     hash = sha256(testcase_name.encode("utf-8")).hexdigest()
-    return f"kuttl-{testcase_name[:32]}-{hash[:10]}"
+    return f"kuttl-{hash[:10]}"
 
 
 def _expand_kuttl_tests(test_cases, output_dir: str, kuttl_tests: str) -> None:
