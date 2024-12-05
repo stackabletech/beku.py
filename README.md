@@ -1,6 +1,6 @@
 # beku
 
-Version: 0.0.10
+Version: 0.0.11-rc1
 
 Fast [Kuttl](https://kuttl.dev/) tests expander for Stackable integration tests.
 
