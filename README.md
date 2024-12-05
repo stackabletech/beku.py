@@ -74,6 +74,6 @@ To release a new version follow the steps below:
 1. Create a new Git branch. For example `release-1.2.3`.
 2. Update the version string (`1.2.3`) in: `src/beku/version.py` and`README.md`.
 3. Commit, push and create a PR.
-4. After the PR is merged, switch to the `main` branch and update it.
+4. After the PR is merged, switch to the `main` branch and update it by executing `git pull`.
 5. On the `main` branch, create and push the release tag. For example: `git tag 1.2.3 -m 1.2.3 && git push --tags`.
 6. Done!
