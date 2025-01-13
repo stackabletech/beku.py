@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import hashlib
 from dataclasses import dataclass, field
 from functools import cached_property
 from hashlib import sha256
@@ -94,6 +95,11 @@ def make_test_source_with_context(
     return TestFile(file_name=file_name, source_dir=source_dir, dest_dir=dest_dir)
 
 
+def tid_short_hash(tid: str) -> str:
+    """Take the first 10 chars of the hash of the given `tid`."""
+    return hashlib.sha256(tid.encode()).hexdigest()[:10]
+
+
 @dataclass(frozen=True)
 class TestCase:
     """A test case is an instance of  test definition together with a set of Jinja variables used to render all
@@ -113,8 +119,11 @@ class TestCase:
         """Return the test id. Used as destination folder name for the generated test case.
         The result is part of a full directory name of the test case. Therefore, the OS filesystem
         directory separator is replaced with underscore.
+
+        Since the result is also used as a folder name, we restrict it's length to 255 characters.
+        This is because some filesystems complain if the name is longer that that.
         """
-        return re.sub(
+        name = re.sub(
             f"[{os.sep}:]",
             "_",
             "_".join(
@@ -124,6 +133,12 @@ class TestCase:
                 )
             ),
         )
+        max_len = 255
+        if len(name) > max_len:
+            name_hash = tid_short_hash(name)
+            return f"{name[: max_len - len(name_hash) - 1]}_{name_hash}"
+        else:
+            return name
 
     def expand(self, template_dir: str, target_dir: str, namespace: str) -> None:
         """Expand test case This will create the target folder, copy files and render render templates."""
