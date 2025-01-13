@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## Fixed
+
+- Cap generated test ids to 255 characters to avoid file system errors ([#35]).
+
+[#35]: https://github.com/stackabletech/beku.py/pull/35
+
 ## 0.0.10 - 2024-11-06
 
 ## Added

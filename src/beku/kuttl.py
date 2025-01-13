@@ -96,6 +96,7 @@ def make_test_source_with_context(
 
 
 def tid_short_hash(tid: str) -> str:
+    """Take the first 10 chars of the hash of the given `tid`."""
     return hashlib.sha256(tid.encode()).hexdigest()[:10]
 
 
@@ -118,6 +119,9 @@ class TestCase:
         """Return the test id. Used as destination folder name for the generated test case.
         The result is part of a full directory name of the test case. Therefore, the OS filesystem
         directory separator is replaced with underscore.
+
+        Since the result is also used as a folder name, we restrict it's length to 255 characters.
+        This is because some filesystems complain if the name is longer that that.
         """
         name = re.sub(
             f"[{os.sep}:]",
@@ -129,9 +133,10 @@ class TestCase:
                 )
             ),
         )
-        if len(name) > 255:
-            hash = tid_short_hash(name)
-            return f"{name[:244]}_{hash}"
+        max_len = 255
+        if len(name) > max_len:
+            name_hash = tid_short_hash(name)
+            return f"{name[: max_len - len(name_hash) - 1]}_{name_hash}"
         else:
             return name
 
