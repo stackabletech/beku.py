@@ -4,15 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## Fixed
+### Changed
+
+- Update registry references to oci ([#36]).
+
+### Fixed
 
 - Cap generated test ids to 255 characters to avoid file system errors ([#35]).
 
 [#35]: https://github.com/stackabletech/beku.py/pull/35
+[#36]: https://github.com/stackabletech/beku.py/pull/36
 
 ## 0.0.10 - 2024-11-06
 
-## Added
+### Added
 
 - Nix build files ([#18])
 - Raise build versions ([#18])
