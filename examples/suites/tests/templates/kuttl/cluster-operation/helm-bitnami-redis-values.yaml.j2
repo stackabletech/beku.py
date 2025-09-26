@@ -1,8 +1,33 @@
 ---
+global:
+  security:
+    allowInsecureImages: true
+
+image:
+  repository: bitnamilegacy/redis
+
+sentinel:
+  image:
+    repository: bitnamilegacy/redis-sentinel
+
+metrics:
+  image:
+    repository: bitnamilegacy/redis-exporter
+
 volumePermissions:
   enabled: false
+  image:
+    repository: bitnamilegacy/os-shell
   containerSecurityContext:
     runAsUser: auto
+
+kubectl:
+  image:
+    repository: bitnamilegacy/kubectl
+
+sysctl:
+  image:
+    repository: bitnamilegacy/os-shell
 
 master:
   podSecurityContext:
