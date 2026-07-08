@@ -44,12 +44,16 @@ class TestFile:
     source_dir: str
     file_name: str
 
-    def build_destination(self) -> str:
+    def build_destination(self, skip_existing: bool = False) -> Optional[str]:
         """Copies the file name to the destination directory.
-        Returns the destination file name.
+        Returns the destination file name, or None if it was skipped because it already exists and
+        `skip_existing` is set (used for common/shared files so a test's own file always wins).
         """
         source = path.join(self.source_dir, self.file_name)
         dest = path.join(self.dest_dir, self.file_name)
+        if skip_existing and path.exists(dest):
+            logging.warning("Skipping common file %s: test case already provides %s", source, dest)
+            return None
         logging.debug("Copy file %s to %s", source, dest)
         copy2(source, dest)
         logging.debug("Update file mode for %s", dest)
@@ -68,13 +72,17 @@ class TestTemplate:
     env: Environment
     values: Dict[str, str]
 
-    def build_destination(self) -> str:
+    def build_destination(self, skip_existing: bool = False) -> Optional[str]:
         """Renders the template to file in the destination directory. The resulting file has the same name as the
         template but with the .j2 or .jinja2 ending removed.
-        Returns the rendered file name.
+        Returns the rendered file name, or None if it was skipped because it already exists and
+        `skip_existing` is set (used for common/shared files so a test's own file always wins).
         """
         source = path.join(self.source_dir, self.file_name)
         dest = path.join(self.dest_dir, re.sub(PATTERN_EXTENSION_JINJA, "", self.file_name))
+        if skip_existing and path.exists(dest):
+            logging.warning("Skipping common template %s: test case already provides %s", source, dest)
+            return None
         logging.debug("Render template %s to %s", source, dest)
         template = self.env.get_template(self.file_name)
         with open(dest, encoding="utf8", mode="w") as stream:
@@ -140,28 +148,50 @@ class TestCase:
         else:
             return name
 
-    def expand(self, template_dir: str, target_dir: str, namespace: str) -> None:
-        """Expand test case This will create the target folder, copy files and render render templates."""
+    def expand(self, template_dir: str, target_dir: str, namespace: str, common_dir: Optional[str] = None) -> None:
+        """Expand test case. This will create the target folder, copy files and render templates.
+
+        The test's own steps (from ``template_dir/<name>``) are rendered first. If ``common_dir`` is
+        given and exists, its files are then rendered into the SAME test folder, so shared steps (e.g.
+        a teardown) can live in a single place instead of being copied into every test. On a name
+        collision the test's OWN file wins: a common file that would overwrite a file the test already
+        provides is skipped (with a warning), so a shared file can never silently clobber a
+        test-specific one.
+        """
         logging.info("Expanding test case id [%s]", self.tid)
-        td_root = path.join(template_dir, self.name)
         tc_root = path.join(target_dir, self.name, self.tid)
         _mkdir_ignore_exists(tc_root)
-        test_env = Environment(loader=FileSystemLoader(path.join(template_dir, self.name)), trim_blocks=True)
-        test_env.globals["lookup"] = ansible_lookup
-        test_env.globals["NAMESPACE"] = determine_namespace(self.tid, namespace)
+        namespace = determine_namespace(self.tid, namespace)
+        self._render_dir(path.join(template_dir, self.name), tc_root, namespace)
+        if common_dir:
+            if path.isdir(common_dir):
+                logging.debug("Rendering common steps from [%s] into [%s]", common_dir, tc_root)
+                self._render_dir(common_dir, tc_root, namespace, skip_existing=True)
+            else:
+                logging.warning("Common steps directory [%s] does not exist, skipping", common_dir)
+
+    def _render_dir(self, source_root: str, tc_root: str, namespace: str, skip_existing: bool = False) -> None:
+        """Render/copy every file under ``source_root`` into ``tc_root``, preserving sub-directories.
+
+        When ``skip_existing`` is set, files whose destination already exists are skipped (used for
+        common/shared files so a test's own file always takes precedence).
+        """
+        env = Environment(loader=FileSystemLoader(source_root), trim_blocks=True)
+        env.globals["lookup"] = ansible_lookup
+        env.globals["NAMESPACE"] = namespace
         sub_level: int = 0
-        for root, dirs, files in walk(td_root):
+        for root, dirs, files in walk(source_root):
             sub_level += 1
             if sub_level == 8:
                 # Sanity check
                 raise ValueError("Maximum recursive level (8) reached.")
             for dir_name in dirs:
-                _mkdir_ignore_exists(path.join(tc_root, root[len(td_root) + 1 :], dir_name))
+                _mkdir_ignore_exists(path.join(tc_root, root[len(source_root) + 1 :], dir_name))
             for file_name in files:
                 test_source = make_test_source_with_context(
-                    file_name, root, path.join(tc_root, root[len(td_root) + 1 :]), test_env, self.values
+                    file_name, root, path.join(tc_root, root[len(source_root) + 1 :]), env, self.values
                 )
-                test_source.build_destination()
+                test_source.build_destination(skip_existing=skip_existing)
 
 
 @dataclass(frozen=True, eq=True)
@@ -336,6 +366,7 @@ def expand(
     output_dir: str,
     kuttl_tests: str,
     namespace: str,
+    common_dir: Optional[str] = None,
 ) -> int:
     """Expand test suite."""
     try:
@@ -344,7 +375,7 @@ def expand(
         _mkdir_ignore_exists(output_dir)
         _expand_kuttl_tests(ets.test_cases, output_dir, kuttl_tests)
         for test_case in ets.test_cases:
-            test_case.expand(template_dir, output_dir, namespace)
+            test_case.expand(template_dir, output_dir, namespace, common_dir)
     except StopIteration as exc:
         raise ValueError(f"Cannot expand test suite [{suite}] because cannot find it in [{kuttl_tests}]") from exc
     return 0

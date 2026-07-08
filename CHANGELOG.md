@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Common test steps: files in a `shared` directory next to the test templates (i.e.
+  `<template_dir>/shared`), or an explicit `--common_dir`, are rendered into every generated test
+  case in addition to the test's own steps. This lets shared steps such as a teardown live in a single
+  place instead of being copied into each test. No-op unless the directory exists.
+
 ### Changed
 
 - Update registry references to oci ([#36]).

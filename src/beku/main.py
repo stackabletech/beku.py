@@ -61,6 +61,19 @@ def parse_cli_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-c",
+        "--common_dir",
+        help="Folder with common test step templates/files that are rendered into EVERY generated "
+        "test case (in addition to the test's own steps). Lets shared steps such as a teardown live "
+        "in a single place instead of being copied into each test. Defaults to a 'shared' folder "
+        "next to the test templates (i.e. <template_dir>/shared); skipped if that folder does not "
+        "exist, so this is a no-op unless you create it.",
+        type=str,
+        required=False,
+        default=None,
+    )
+
+    parser.add_argument(
         "-s",
         "--suite",
         help="Name of the test suite to expand. Default: default",
@@ -94,6 +107,11 @@ def main() -> int:
     rmtree(path=cli_args.output_dir, ignore_errors=True)
     # Compatibility warning: add 'tests' to output_dir
     output_dir = path.join(cli_args.output_dir, "tests")
+    # Default the common steps directory to a 'shared' folder next to the test templates. It is
+    # rendered into every test case if present, and silently skipped otherwise (so this stays a no-op
+    # for repositories that don't opt in by creating it). Note: 'commons' is deliberately NOT used, as
+    # some operators already keep unrelated helper scripts there.
+    common_dir = cli_args.common_dir if cli_args.common_dir is not None else path.join(cli_args.template_dir, "shared")
     return expand(
         cli_args.suite,
         effective_test_suites,
@@ -101,4 +119,5 @@ def main() -> int:
         output_dir,
         cli_args.kuttl_test,
         cli_args.namespace,
+        common_dir,
     )

@@ -61,6 +61,18 @@ rm -rf tests/_work && beku
 cd tests/_work && kubectl kuttl test
 ```
 
+### Common steps
+
+Files placed in a `shared` directory next to the test templates (i.e.
+`tests/templates/kuttl/shared`) are rendered into *every* generated test case, in addition to that
+test's own steps. This lets shared steps — for example a teardown that deletes the product custom
+resources before the namespace is removed — live in a single place instead of being copied into each
+test. The directory is templated the same way as regular steps (`.j2`/`.jinja2` files are rendered,
+others copied; `NAMESPACE` and `lookup` are available). It is skipped if it does not exist, and its
+location can be overridden with `--common_dir`. On a name collision the test's own file wins — a
+shared file that would overwrite a file the test already provides is skipped (with a warning) — so a
+shared step never silently clobbers a test-specific one.
+
 Also see the `examples` folder.
 
 ## Release a new version
