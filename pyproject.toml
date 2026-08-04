@@ -8,7 +8,7 @@ dynamic = ["version"]
 authors = [{ name = "Razvan Mihai", email = "razvan.mihai@stackable.tech" }]
 description = "Test suite expander for Stackable Kuttl tests."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
