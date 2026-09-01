@@ -4,7 +4,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 2c9f875913ee60ca25ce70243dc24d5b6415598c # 4.6.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -15,23 +15,23 @@ repos:
       - id: check-symlinks
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: 81e9f98ffd059efe8aa9c1b1a42e5cce61b640c6 # 1.35.1
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530 # v1.38.0
     hooks:
       - id: yamllint
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: f295829140d25717bc79368d3f966fc1f67a824f # 0.41.0
+    rev: 5b5dddc4fb0f83c3ea1fc5616fa63e115dce83e0 # v0.49.1
     hooks:
       - id: markdownlint
 
   - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: 2491238703a5d3415bb2b7ff11388bf775372f29 # 0.10.0
+    rev: 99470f5e12208ff0fb17ab81c3c494f7620a1d8d # v0.11.0
     hooks:
       - id: shellcheck
         args: ["--severity=info"]
 
   - repo: https://github.com/rhysd/actionlint
-    rev: 62dc61a45fc95efe8c800af7a557ab0b9165d63b # 1.7.1
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
     hooks:
       - id: actionlint
 

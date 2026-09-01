@@ -4,17 +4,22 @@ name: pre-commit
 on:
   pull_request:
 
+permissions: {}
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Run pre-commit (Python ${{ matrix.python-version }})
-        uses: stackabletech/actions/run-pre-commit@5901c3b1455488820c4be367531e07c3c3e82538 # v0.4.0
+        uses: stackabletech/actions/run-pre-commit@e8aed001d347bcf693e41b61f4098b0cb94b4ab6 # v0.18.0
         with:
           python-version: ${{ matrix.python-version }}
